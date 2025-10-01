@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Explainor MVP</title>
+    <style>
+        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; margin-top: 50px; }
+        #container { width: 80%; max-width: 800px; }
+        textarea { width: 100%; height: 100px; margin-bottom: 10px; }
+        button { padding: 10px 20px; }
+        #status { margin-top: 20px; font-style: italic; }
+        #video-container { margin-top: 20px; }
+        video { max-width: 100%; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+
+<div id="container">
+    <h1>Explainor MVP</h1>
+    <textarea id="prompt-input" placeholder="Введите ваш запрос, например: 'Объясни клиент-серверную архитектуру'"></textarea>
+    <button id="generate-btn">Сгенерировать видео</button>
+
+    <div id="status"></div>
+    <div id="video-container"></div>
+</div>
+
+<script>
+    const promptInput = document.getElementById('prompt-input');
+    const generateBtn = document.getElementById('generate-btn');
+    const statusDiv = document.getElementById('status');
+    const videoContainer = document.getElementById('video-container');
+
+    generateBtn.addEventListener('click', async () => {
+        const prompt = promptInput.value;
+        if (!prompt) {
+            alert('Пожалуйста, введите запрос.');
+            return;
+        }
+
+        statusDiv.textContent = 'Генерация началась... Это может занять до минуты.';
+        videoContainer.innerHTML = '';
+        generateBtn.disabled = true;
+
+        try {
+            const response = await fetch('/api/generate-video', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ prompt: prompt })
+            });
+
+            if (!response.ok) {
+                throw new Error(`Ошибка сервера: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            
+            statusDiv.textContent = 'Видео успешно сгенерировано!';
+            
+            const videoElement = document.createElement('video');
+            videoElement.src = result.url;
+            videoElement.controls = true;
+            videoContainer.appendChild(videoElement);
+
+        } catch (error) {
+            statusDiv.textContent = `Произошла ошибка: ${error.message}`;
+            console.error(error);
+        } finally {
+            generateBtn.disabled = false;
+        }
+    });
+</script>
+
+</body>
+</html>
+
