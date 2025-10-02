@@ -26,7 +26,7 @@ const mainSchema = z.object({
 
 export const RemotionVideo = () => {
     const [handle] = useState(() => delayRender());
-    const [props, setProps] = useState(null);
+    const [props, setProps] = useState<z.infer<typeof mainSchema> | null>(null);
 
     useEffect(() => {
         const fetchAndContinue = async () => {

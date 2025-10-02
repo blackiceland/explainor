@@ -1,2 +1,2 @@
 renderer:
-  url: http://localhost:3030
+  url: ${RENDERER_URL:http://localhost:3030}

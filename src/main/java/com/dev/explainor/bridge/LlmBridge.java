@@ -10,20 +10,7 @@ import java.io.IOException;
 @Service
 public class LlmBridge {
 
-    // private final WebClient webClient;
-    // @Value("${llm.api.key}")
-    // private String apiKey;
-    // @Value("${llm.api.url}")
-    // private String apiUrl;
-
-    // public LlmBridge(WebClient webClient) {
-    //     this.webClient = webClient;
-    // }
-
     public Mono<JsonNode> getAnimationScenario(String prompt) {
-        // TODO: Implement actual API call to an LLM
-        // For now, return a hardcoded JSON for testing purposes
-
         String jsonString = """
                 {
                   "canvas": {
