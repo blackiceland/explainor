@@ -1,5 +1,5 @@
 import React from 'react';
-import { AbsoluteFill, useCurrentFrame, useVideoConfig } from 'remotion';
+import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, Easing } from 'remotion';
 import { z } from 'zod';
 
 const timelineEventSchema = z.object({
@@ -30,12 +30,36 @@ type TimelineEvent = z.infer<typeof timelineEventSchema>;
 
 const renderElement = (event: TimelineEvent, frame: number, fps: number) => {
     const timeInSeconds = frame / fps;
+    const startFrame = event.time * fps;
 
     if (timeInSeconds < event.time) {
         return null;
     }
 
     const props = event.props || {};
+    const fadeInDuration = 20;
+    
+    const opacity = interpolate(
+        frame,
+        [startFrame, startFrame + fadeInDuration],
+        [0, 1],
+        {
+            extrapolateLeft: 'clamp',
+            extrapolateRight: 'clamp',
+            easing: Easing.out(Easing.ease),
+        }
+    );
+
+    const scale = interpolate(
+        frame,
+        [startFrame, startFrame + fadeInDuration],
+        [0.8, 1],
+        {
+            extrapolateLeft: 'clamp',
+            extrapolateRight: 'clamp',
+            easing: Easing.out(Easing.back(1.5)),
+        }
+    );
     
     if (event.type === 'text') {
         const style: React.CSSProperties = {
@@ -46,7 +70,8 @@ const renderElement = (event: TimelineEvent, frame: number, fps: number) => {
             fontWeight: 'bold',
             color: '#000',
             textAlign: 'center',
-            transform: 'translate(-50%, -50%)',
+            transform: `translate(-50%, -50%) scale(${scale})`,
+            opacity,
         };
         return <div style={style}>{event.content}</div>;
     }
@@ -57,11 +82,12 @@ const renderElement = (event: TimelineEvent, frame: number, fps: number) => {
             left: props.x,
             top: props.y,
             fontSize: props.fontSize || 120,
-            transform: 'translate(-50%, -50%)',
+            transform: `translate(-50%, -50%) scale(${scale})`,
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             gap: '10px',
+            opacity,
         };
 
         const iconMap: Record<string, string> = {
@@ -78,6 +104,60 @@ const renderElement = (event: TimelineEvent, frame: number, fps: number) => {
             <div style={style}>
                 <div style={{ fontSize: props.fontSize || 120 }}>{icon}</div>
             </div>
+        );
+    }
+
+    if (event.type === 'arrow' && event.from && event.to) {
+        const animationDuration = (event.duration || 1) * fps;
+        const endFrame = startFrame + animationDuration;
+
+        const progress = interpolate(
+            frame,
+            [startFrame, endFrame],
+            [0, 1],
+            {
+                extrapolateLeft: 'clamp',
+                extrapolateRight: 'clamp',
+                easing: Easing.inOut(Easing.ease),
+            }
+        );
+
+        const currentX = interpolate(progress, [0, 1], [event.from.x, event.to.x]);
+        const currentY = interpolate(progress, [0, 1], [event.from.y, event.to.y]);
+
+        const angle = Math.atan2(event.to.y - event.from.y, event.to.x - event.from.x);
+        const length = Math.sqrt(
+            Math.pow(event.to.x - event.from.x, 2) + 
+            Math.pow(event.to.y - event.from.y, 2)
+        );
+        const currentLength = length * progress;
+
+        const arrowStyle: React.CSSProperties = {
+            position: 'absolute',
+            left: event.from.x,
+            top: event.from.y,
+            width: currentLength,
+            height: 4,
+            backgroundColor: '#007bff',
+            transformOrigin: '0 50%',
+            transform: `rotate(${angle}rad)`,
+            opacity,
+        };
+
+        const arrowHeadStyle: React.CSSProperties = {
+            position: 'absolute',
+            left: currentX - 10,
+            top: currentY - 10,
+            fontSize: 20,
+            opacity: progress > 0.8 ? opacity : 0,
+            transition: 'opacity 0.2s',
+        };
+
+        return (
+            <>
+                <div style={arrowStyle} />
+                <div style={arrowHeadStyle}>▶</div>
+            </>
         );
     }
 
