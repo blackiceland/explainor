@@ -38,11 +38,11 @@ public class LlmBridge {
                     },
                     {
                       "elementId": "server-icon",
-                      "type": "icon",
-                      "asset": "server",
+                      "type": "animated-icon",
+                      "asset": "https://assets9.lottiefiles.com/packages/lf20_96b_kofh.json",
                       "action": "appear",
                       "time": 1,
-                      "props": { "x": 1080, "y": 360, "fontSize": 100 }
+                      "props": { "x": 1080, "y": 360 }
                     },
                     {
                       "elementId": "server-text",

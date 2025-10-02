@@ -1,10 +1,16 @@
-import React from 'react';
-import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, Easing } from 'remotion';
+import React, { useState, useEffect } from 'react';
+import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, Easing, delayRender, continueRender } from 'remotion';
 import { z } from 'zod';
+import { loadFont } from '@remotion/google-fonts/Inter';
+import { Icon } from '../components/Icon';
+import { AnimatedIcon } from '../components/AnimatedIcon';
+
+const font = loadFont();
+const { fontFamily } = font;
 
 const timelineEventSchema = z.object({
     elementId: z.string(),
-    type: z.enum(["icon", "text", "arrow"]),
+    type: z.enum(["icon", "text", "arrow", "animated-icon"]),
     asset: z.string().optional(),
     content: z.string().optional(),
     action: z.enum(["appear", "animate"]),
@@ -61,17 +67,35 @@ const renderElement = (event: TimelineEvent, frame: number, fps: number) => {
         }
     );
     
+    if (event.type === 'animated-icon') {
+        const style: React.CSSProperties = {
+            position: 'absolute',
+            left: props.x,
+            top: props.y,
+            transform: `translate(-50%, -50%) scale(${scale})`,
+            opacity,
+            filter: 'drop-shadow(0 0 10px rgba(0, 123, 255, 0.7))',
+        };
+
+        return (
+            <div style={style}>
+                <AnimatedIcon asset={event.asset || ''} />
+            </div>
+        );
+    }
+
     if (event.type === 'text') {
         const style: React.CSSProperties = {
             position: 'absolute',
             left: props.x,
             top: props.y,
-            fontSize: props.fontSize || 24,
-            fontWeight: 'bold',
-            color: '#000',
+            fontSize: props.fontSize || 32,
+            fontWeight: '600',
+            color: '#FFFFFF',
             textAlign: 'center',
             transform: `translate(-50%, -50%) scale(${scale})`,
             opacity,
+            fontFamily,
         };
         return <div style={style}>{event.content}</div>;
     }
@@ -81,28 +105,15 @@ const renderElement = (event: TimelineEvent, frame: number, fps: number) => {
             position: 'absolute',
             left: props.x,
             top: props.y,
-            fontSize: props.fontSize || 120,
             transform: `translate(-50%, -50%) scale(${scale})`,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '10px',
             opacity,
+            color: '#FFFFFF',
+            filter: 'drop-shadow(0 0 10px rgba(0, 123, 255, 0.7))',
         };
-
-        const iconMap: Record<string, string> = {
-            'laptop': '💻',
-            'computer': '🖥️',
-            'server': '🗄️',
-            'database': '💾',
-            'cloud': '☁️',
-        };
-
-        const icon = iconMap[event.asset || ''] || '📦';
 
         return (
             <div style={style}>
-                <div style={{ fontSize: props.fontSize || 120 }}>{icon}</div>
+                <Icon asset={event.asset || 'default'} className="w-24 h-24" />
             </div>
         );
     }
@@ -151,6 +162,7 @@ const renderElement = (event: TimelineEvent, frame: number, fps: number) => {
             fontSize: 20,
             opacity: progress > 0.8 ? opacity : 0,
             transition: 'opacity 0.2s',
+            color: '#007bff'
         };
 
         return (
@@ -164,12 +176,26 @@ const renderElement = (event: TimelineEvent, frame: number, fps: number) => {
     return null;
 };
 
-export const Main: React.FC<z.infer<typeof mainSchema>> = ({ canvas, timeline }) => {
+export const Main: React.FC<z.infer<typeof mainSchema>> = ({ timeline }) => {
     const frame = useCurrentFrame();
     const { fps } = useVideoConfig();
 
+    const [handle] = useState(() => delayRender());
+    const [fontLoaded, setFontLoaded] = useState(false);
+
+    useEffect(() => {
+        font.waitUntilDone().then(() => {
+            setFontLoaded(true);
+            continueRender(handle);
+        });
+    }, [handle]);
+
+    if (!fontLoaded) {
+        return null;
+    }
+
     return (
-        <AbsoluteFill style={{ backgroundColor: canvas.backgroundColor }}>
+        <AbsoluteFill style={{ backgroundColor: '#1A1A1A', fontFamily }}>
             {timeline.map((event) => (
                 <React.Fragment key={event.elementId}>
                     {renderElement(event, frame, fps)}

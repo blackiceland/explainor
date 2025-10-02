@@ -18,6 +18,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3030:3030"
+    environment:
+      - PUPPETEER_CACHE_DIR=/root/.cache/puppeteer
     volumes:
       - remotion-cache:/root/.cache
 
