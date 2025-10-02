@@ -1,4 +1,4 @@
-import { Composition } from "remotion";
+import { Composition, registerRoot } from "remotion";
 import { Main } from "./remotion/Main";
 import { z } from "zod";
 import React from "react";
@@ -56,5 +56,5 @@ const RemotionRoot: React.FC = () => {
     );
 };
 
-export default RemotionRoot;
+registerRoot(RemotionRoot);
 

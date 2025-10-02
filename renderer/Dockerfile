@@ -45,8 +45,6 @@ COPY . .
 
 RUN npm run build
 
-RUN node download-browser.js
-
 EXPOSE 3030
 
 CMD [ "npm", "start" ]
