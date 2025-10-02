@@ -18,3 +18,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3030:3030"
+    volumes:
+      - remotion-cache:/root/.cache
+
+volumes:
+  remotion-cache:

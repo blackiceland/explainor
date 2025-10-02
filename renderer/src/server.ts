@@ -21,9 +21,9 @@ let bundleLocation: string | null = null;
 async function ensureBundle() {
     if (!bundleLocation) {
         console.log('Creating bundle...');
-        bundleLocation = await bundle({
-            entryPoint: path.join(process.cwd(), 'src/index.ts'),
-            webpackOverride: (config) => config,
+        const entryPoint = path.join(process.cwd(), 'src/index.tsx');
+        bundleLocation = await bundle(entryPoint, (progress: number) => {
+            console.log(`Bundling: ${Math.round(progress * 100)}%`);
         });
         console.log('Bundle created at:', bundleLocation);
     }
@@ -32,29 +32,43 @@ async function ensureBundle() {
 
 app.post('/render', async (req, res) => {
     try {
+        console.log('=== Render request received ===');
         const props = req.body;
-        const serveUrl = await ensureBundle();
         
+        console.log('Step 1: Ensuring bundle is ready...');
+        const serveUrl = await ensureBundle();
+        console.log('Step 1: Bundle ready ✓');
+        
+        console.log('Step 2: Loading compositions...');
         const compositions = await getCompositions(serveUrl, {
             inputProps: props,
         });
+        console.log(`Step 2: Found ${compositions.length} composition(s) ✓`);
 
         const composition = compositions.find((c) => c.id === compositionId);
         if (!composition) {
             throw new Error(`Composition ${compositionId} not found`);
         }
+        console.log(`Step 3: Using composition "${composition.id}" (${composition.width}x${composition.height}, ${composition.durationInFrames} frames)`);
 
+        console.log('Step 4: Starting video render...');
         await renderMedia({
             composition,
             serveUrl,
             codec: 'h264',
             outputLocation,
             inputProps: props,
+            onProgress: ({ progress, renderedFrames, encodedFrames }) => {
+                const percent = Math.round(progress * 100);
+                console.log(`Rendering: ${percent}% (${renderedFrames}/${composition.durationInFrames} frames rendered, ${encodedFrames} encoded)`);
+            },
         });
+        console.log('Step 4: Render completed ✓');
 
+        console.log('=== Video ready! ===\n');
         res.status(200).json({ url: `/static/video.mp4` });
     } catch (e) {
-        console.error(e);
+        console.error('ERROR during render:', e);
         const message = e instanceof Error ? e.message : 'Unknown error';
         res.status(500).json({ error: message });
     }

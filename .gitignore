@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Node.js ###
+renderer/node_modules/
+renderer/dist/
+renderer/.cache/
