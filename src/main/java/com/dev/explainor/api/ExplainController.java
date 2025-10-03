@@ -2,7 +2,9 @@ package com.dev.explainor.api;
 
 import com.dev.explainor.api.dto.ExplainRequest;
 import com.dev.explainor.bridge.LlmBridge;
+import com.dev.explainor.conductor.service.ConductorService;
 import com.dev.explainor.renderer.RendererClient;
+import com.dev.explainor.renderer.domain.FinalTimeline;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,16 +19,19 @@ import reactor.core.publisher.Mono;
 public class ExplainController {
     private final LlmBridge llmBridge;
     private final RendererClient rendererClient;
+    private final ConductorService conductorService;
 
-    public ExplainController(LlmBridge llmBridge, RendererClient rendererClient) {
+    public ExplainController(LlmBridge llmBridge, RendererClient rendererClient, ConductorService conductorService) {
         this.llmBridge = llmBridge;
         this.rendererClient = rendererClient;
+        this.conductorService = conductorService;
     }
 
     @PostMapping(value = "/explain", produces = MediaType.APPLICATION_JSON_VALUE)
     public Mono<ResponseEntity<JsonNode>> explain(@RequestBody ExplainRequest request) {
-        return llmBridge.getAnimationScenario(request.getPrompt())
-                .flatMap(rendererClient::renderVideo)
-                .map(ResponseEntity::ok);
+        return llmBridge.getAnimationStoryboard(request.getPrompt())
+            .map(conductorService::generateTimeline)
+            .flatMap(rendererClient::renderVideo)
+            .map(ResponseEntity::ok);
     }
 }

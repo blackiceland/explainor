@@ -1,5 +1,6 @@
 package com.dev.explainor.renderer;
 
+import com.dev.explainor.renderer.domain.FinalTimeline;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -19,10 +20,10 @@ public class RendererClient {
                 .build();
     }
 
-    public Mono<JsonNode> renderVideo(JsonNode scenario) {
+    public Mono<JsonNode> renderVideo(FinalTimeline timeline) {
         return this.webClient.post()
                 .uri("/render")
-                .bodyValue(scenario)
+                .bodyValue(timeline)
                 .retrieve()
                 .bodyToMono(JsonNode.class);
     }

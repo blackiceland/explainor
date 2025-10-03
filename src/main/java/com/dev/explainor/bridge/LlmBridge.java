@@ -1,52 +1,95 @@
 package com.dev.explainor.bridge;
 
+import com.dev.explainor.conductor.domain.Command;
+import com.dev.explainor.conductor.domain.Storyboard;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.github.sashirestela.anthropic.Anthropic;
-import io.github.sashirestela.anthropic.domain.completion.CompletionRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class LlmBridge {
 
-    private final Anthropic anthropic;
+    private static final Logger log = LoggerFactory.getLogger(LlmBridge.class);
+
+    private final WebClient webClient;
     private final String systemPrompt;
     private final ObjectMapper objectMapper;
 
     public LlmBridge(@Value("${anthropic.api.key}") String apiKey,
-                     @Value("classpath:system_prompt.txt") Resource systemPromptResource) throws IOException {
-        this.anthropic = Anthropic.builder()
-                .apiKey(apiKey)
+                     @Value("classpath:system_prompt_v2.txt") Resource systemPromptResource,
+                     ObjectMapper objectMapper) throws IOException {
+        this.webClient = WebClient.builder()
+                .baseUrl("https://api.anthropic.com")
+                .defaultHeader("x-api-key", apiKey)
+                .defaultHeader("anthropic-version", "2023-06-01")
+                .defaultHeader("content-type", "application/json")
                 .build();
         this.systemPrompt = asString(systemPromptResource);
-        this.objectMapper = new ObjectMapper();
+        this.objectMapper = objectMapper;
     }
 
-    public Mono<JsonNode> getAnimationScenario(String prompt) {
-        String fullPrompt = "\n\nHuman: " + systemPrompt + "\n" + prompt + "\n\nAssistant:";
-        CompletionRequest request = CompletionRequest.builder()
-                .prompt(fullPrompt)
-                .model("claude-3-sonnet-20240229")
-                .maxTokensToSample(4096)
-                .temperature(0.0)
-                .build();
+    public Mono<Storyboard> getAnimationStoryboard(String prompt) {
+        Map<String, Object> requestBody = Map.of(
+            "model", "claude-3-sonnet-20240229",
+            "max_tokens", 4096,
+            "temperature", 0.0,
+            "system", systemPrompt,
+            "messages", List.of(
+                Map.of(
+                    "role", "user",
+                    "content", prompt
+                )
+            )
+        );
 
-        return anthropic.completions().create(request)
+        return webClient.post()
+                .uri("/v1/messages")
+                .bodyValue(requestBody)
+                .retrieve()
+                .onStatus(
+                    status -> status.isError(),
+                    response -> response.bodyToMono(String.class)
+                        .flatMap(errorBody -> {
+                            log.error("Anthropic API error: {}", errorBody);
+                            return Mono.error(new RuntimeException("Anthropic API returned error: " + errorBody));
+                        })
+                )
+                .bodyToMono(JsonNode.class)
                 .map(response -> {
                     try {
-                        return objectMapper.readTree(response.getCompletion());
+                        if (!response.has("content") || response.get("content").isEmpty()) {
+                            log.error("Invalid LLM response structure: {}", response);
+                            throw new RuntimeException("Invalid LLM response: missing 'content' field");
+                        }
+
+                        JsonNode contentNode = response.get("content").get(0);
+                        if (!contentNode.has("text")) {
+                            log.error("Invalid LLM response structure: content item missing 'text' field: {}", response);
+                            throw new RuntimeException("Invalid LLM response: content missing 'text' field");
+                        }
+
+                        String jsonResponse = contentNode.get("text").asText();
+                        List<Command> commands = objectMapper.readValue(jsonResponse, new TypeReference<>() {});
+                        return new Storyboard(commands);
                     } catch (JsonProcessingException e) {
-                        throw new RuntimeException("Failed to parse LLM response", e);
+                        log.error("Failed to parse storyboard from LLM response: {}", response, e);
+                        throw new RuntimeException("Failed to parse LLM storyboard response", e);
                     }
                 });
     }
@@ -57,4 +100,3 @@ public class LlmBridge {
         }
     }
 }
-
