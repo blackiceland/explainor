@@ -38,3 +38,6 @@ build/
 renderer/node_modules/
 renderer/dist/
 renderer/.cache/
+
+# Allow specific files
+!src/main/resources/system_prompt.txt

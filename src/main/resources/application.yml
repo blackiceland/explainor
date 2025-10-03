@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: explainor
+
+renderer:
+  url: http://renderer:3030
+
+anthropic:
+  api:
+    key: ${ANTHROPIC_API_KEY}
