@@ -116,7 +116,7 @@ const renderElement = (event: TimelineEvent, frame: number, fps: number, allEven
                     top: props.y,
                     transform: `translate(-50%, -50%) scale(${scale})`,
                     opacity,
-                    filter: 'drop-shadow(3px 6px 8px rgba(0, 0, 0, 0.25))',
+                    filter: 'url(#realistic-shadow)',
                 };
 
                 return (
@@ -138,7 +138,7 @@ const renderElement = (event: TimelineEvent, frame: number, fps: number, allEven
             transform: `translate(-50%, -50%) scale(${scale})`,
             opacity,
             fontFamily: font.fontFamily,
-            textShadow: 'none',
+            filter: 'url(#realistic-shadow)',
         };
         return <div style={style}>{event.content}</div>;
     }
@@ -151,12 +151,12 @@ const renderElement = (event: TimelineEvent, frame: number, fps: number, allEven
                     transform: `translate(-50%, -50%) scale(${scale})`,
                     opacity,
                     color: '#000000',
-                    filter: 'drop-shadow(3px 6px 8px rgba(0, 0, 0, 0.25))',
+                    filter: 'url(#realistic-shadow)',
                 };
 
                 return (
                     <div style={style}>
-                        <Icon asset={event.asset || 'default'} width={96} height={96} strokeWidth={1.5} />
+                        <Icon asset={event.asset || 'default'} width={96} height={96} strokeWidth={1} />
                     </div>
                 );
             }
@@ -192,6 +192,14 @@ const renderElement = (event: TimelineEvent, frame: number, fps: number, allEven
             opacity,
         };
 
+        const shadowContainerStyle: React.CSSProperties = {
+            ...arrowContainerStyle,
+            left: event.from.x + 10,
+            top: event.from.y + 10,
+            opacity: opacity * 0.25,
+            filter: 'blur(5px)',
+        };
+
         const lineStyle: React.CSSProperties = {
             position: 'absolute',
             height: '100%',
@@ -211,10 +219,16 @@ const renderElement = (event: TimelineEvent, frame: number, fps: number, allEven
         };
 
         return (
-            <div style={arrowContainerStyle}>
-                <div style={lineStyle} />
-                <div style={headStyle} />
-            </div>
+            <>
+                <div style={shadowContainerStyle}>
+                    <div style={lineStyle} />
+                    <div style={headStyle} />
+                </div>
+                <div style={arrowContainerStyle}>
+                    <div style={lineStyle} />
+                    <div style={headStyle} />
+                </div>
+            </>
         );
     }
 
@@ -241,6 +255,29 @@ export const Main: React.FC<z.infer<typeof mainSchema>> = ({ timeline, canvas })
 
     return (
         <AbsoluteFill style={{ backgroundColor: canvas.backgroundColor, fontFamily: font.fontFamily }}>
+            <svg width="0" height="0" style={{ position: 'absolute' }}>
+                <defs>
+                    <filter id="realistic-shadow" x="-100%" y="-100%" width="300%" height="300%">
+                        <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur1"/>
+                        <feOffset in="blur1" dx="10" dy="10" result="offsetBlur1"/>
+                        <feComponentTransfer in="offsetBlur1" result="shadow1">
+                            <feFuncA type="linear" slope="0.2"/>
+                        </feComponentTransfer>
+                        
+                        <feGaussianBlur in="SourceAlpha" stdDeviation="8" result="blur2"/>
+                        <feOffset in="blur2" dx="15" dy="15" result="offsetBlur2"/>
+                        <feComponentTransfer in="offsetBlur2" result="shadow2">
+                            <feFuncA type="linear" slope="0.15"/>
+                        </feComponentTransfer>
+
+                        <feMerge>
+                            <feMergeNode in="shadow2"/>
+                            <feMergeNode in="shadow1"/>
+                            <feMergeNode in="SourceGraphic"/>
+                        </feMerge>
+                    </filter>
+                </defs>
+            </svg>
             {timeline.map((event, index) => (
                 <React.Fragment key={`${event.elementId}-${index}`}>
                     {renderElement(event, frame, fps, timeline)}

@@ -12,12 +12,12 @@ public class LlmBridge {
 
     public Mono<JsonNode> getAnimationScenario(String prompt) {
         String jsonString = """
-                {
-                  "canvas": {
-                    "width": 1280,
-                    "height": 720,
-                    "backgroundColor": "#EAEAEA"
-                  },
+                        {
+                          "canvas": {
+                            "width": 1280,
+                            "height": 720,
+                            "backgroundColor": "#DCDCDC"
+                          },
                   "totalDuration": 10,
                   "timeline": [
                     {

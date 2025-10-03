@@ -20,7 +20,7 @@ export const Icon: React.FC<{
     width?: number;
     height?: number;
     strokeWidth?: number;
-}> = ({ asset, width = 96, height = 96, strokeWidth = 2 }) => {
+}> = ({ asset, width = 96, height = 96, strokeWidth = 1 }) => {
     const IconComponent = iconMap[asset] || iconMap.default;
-    return <IconComponent style={{ width, height, strokeWidth }} />;
+    return <IconComponent style={{ width, height }} strokeWidth={strokeWidth} />;
 };
