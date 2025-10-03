@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, Easing, delayRender, continueRender } from 'remotion';
 import { z } from 'zod';
-import { loadFont } from '@remotion/google-fonts/Inter';
+import { loadFont } from '@remotion/google-fonts/Manrope';
 import { Icon } from '../components/Icon';
 import { AnimatedIcon } from '../components/AnimatedIcon';
 
 const font = loadFont();
-const { fontFamily } = font;
 
 const timelineEventSchema = z.object({
     elementId: z.string(),
-    type: z.enum(["icon", "text", "arrow", "animated-icon"]),
+    type: z.enum(["icon", "text", "arrow", "animated-icon"]).optional(),
     asset: z.string().optional(),
     content: z.string().optional(),
-    action: z.enum(["appear", "animate"]),
+    action: z.enum(["appear", "animate", "disappear"]),
     time: z.number(),
     duration: z.number().optional(),
     from: z.object({ x: z.number(), y: z.number() }).optional(),
@@ -34,31 +33,74 @@ const mainSchema = z.object({
 
 type TimelineEvent = z.infer<typeof timelineEventSchema>;
 
-const renderElement = (event: TimelineEvent, frame: number, fps: number) => {
+// Helper to find lifecycle events for an element
+const getElementLifecycle = (elementId: string, timeline: TimelineEvent[]) => {
+    const events = timeline.filter(e => e.elementId === elementId);
+    const appearEvent = events.find(e => e.action === 'appear');
+    const disappearEvent = events.find(e => e.action === 'disappear');
+    
+    return { appearEvent, disappearEvent };
+};
+
+const renderElement = (event: TimelineEvent, frame: number, fps: number, allEvents: TimelineEvent[]) => {
+    // Only render for 'appear' or 'animate' actions
+    if (event.action === 'disappear') {
+        return null;
+    }
+
     const timeInSeconds = frame / fps;
     const startFrame = event.time * fps;
 
-    if (timeInSeconds < event.time) {
+    // Get lifecycle for this element
+    const { appearEvent, disappearEvent } = getElementLifecycle(event.elementId, allEvents);
+    
+    // Determine time boundaries
+    const appearTime = appearEvent ? appearEvent.time * fps : startFrame;
+    const disappearTime = disappearEvent ? disappearEvent.time * fps : Infinity;
+
+    // Don't render if outside lifecycle
+    if (frame < appearTime || frame >= disappearTime) {
         return null;
     }
 
     const props = event.props || {};
     const fadeInDuration = 20;
+    const fadeOutDuration = 20;
     
-    const opacity = interpolate(
-        frame,
-        [startFrame, startFrame + fadeInDuration],
-        [0, 1],
-        {
-            extrapolateLeft: 'clamp',
-            extrapolateRight: 'clamp',
-            easing: Easing.out(Easing.ease),
-        }
-    );
+    // Calculate opacity with fade in and fade out
+    let opacity = 1;
+    
+    // Fade in
+    if (frame < appearTime + fadeInDuration) {
+        opacity = interpolate(
+            frame,
+            [appearTime, appearTime + fadeInDuration],
+            [0, 1],
+            {
+                extrapolateLeft: 'clamp',
+                extrapolateRight: 'clamp',
+                easing: Easing.out(Easing.ease),
+            }
+        );
+    }
+    
+    // Fade out
+    if (disappearTime !== Infinity && frame >= disappearTime - fadeOutDuration) {
+        opacity = interpolate(
+            frame,
+            [disappearTime - fadeOutDuration, disappearTime],
+            [1, 0],
+            {
+                extrapolateLeft: 'clamp',
+                extrapolateRight: 'clamp',
+                easing: Easing.in(Easing.ease),
+            }
+        );
+    }
 
     const scale = interpolate(
         frame,
-        [startFrame, startFrame + fadeInDuration],
+        [appearTime, appearTime + fadeInDuration],
         [0.8, 1],
         {
             extrapolateLeft: 'clamp',
@@ -67,22 +109,22 @@ const renderElement = (event: TimelineEvent, frame: number, fps: number) => {
         }
     );
     
-    if (event.type === 'animated-icon') {
-        const style: React.CSSProperties = {
-            position: 'absolute',
-            left: props.x,
-            top: props.y,
-            transform: `translate(-50%, -50%) scale(${scale})`,
-            opacity,
-            filter: 'drop-shadow(0 0 10px rgba(0, 123, 255, 0.7))',
-        };
+            if (event.type === 'animated-icon') {
+                const style: React.CSSProperties = {
+                    position: 'absolute',
+                    left: props.x,
+                    top: props.y,
+                    transform: `translate(-50%, -50%) scale(${scale})`,
+                    opacity,
+                    filter: 'drop-shadow(3px 6px 8px rgba(0, 0, 0, 0.25))',
+                };
 
-        return (
-            <div style={style}>
-                <AnimatedIcon asset={event.asset || ''} />
-            </div>
-        );
-    }
+                return (
+                    <div style={style}>
+                        <AnimatedIcon asset={event.asset || ''} />
+                    </div>
+                );
+            }
 
     if (event.type === 'text') {
         const style: React.CSSProperties = {
@@ -91,32 +133,33 @@ const renderElement = (event: TimelineEvent, frame: number, fps: number) => {
             top: props.y,
             fontSize: props.fontSize || 32,
             fontWeight: '600',
-            color: '#FFFFFF',
+            color: '#000000',
             textAlign: 'center',
             transform: `translate(-50%, -50%) scale(${scale})`,
             opacity,
-            fontFamily,
+            fontFamily: font.fontFamily,
+            textShadow: 'none',
         };
         return <div style={style}>{event.content}</div>;
     }
 
-    if (event.type === 'icon') {
-        const style: React.CSSProperties = {
-            position: 'absolute',
-            left: props.x,
-            top: props.y,
-            transform: `translate(-50%, -50%) scale(${scale})`,
-            opacity,
-            color: '#FFFFFF',
-            filter: 'drop-shadow(0 0 10px rgba(0, 123, 255, 0.7))',
-        };
+            if (event.type === 'icon') {
+                const style: React.CSSProperties = {
+                    position: 'absolute',
+                    left: props.x,
+                    top: props.y,
+                    transform: `translate(-50%, -50%) scale(${scale})`,
+                    opacity,
+                    color: '#000000',
+                    filter: 'drop-shadow(3px 6px 8px rgba(0, 0, 0, 0.25))',
+                };
 
-        return (
-            <div style={style}>
-                <Icon asset={event.asset || 'default'} className="w-24 h-24" />
-            </div>
-        );
-    }
+                return (
+                    <div style={style}>
+                        <Icon asset={event.asset || 'default'} width={96} height={96} strokeWidth={1.5} />
+                    </div>
+                );
+            }
 
     if (event.type === 'arrow' && event.from && event.to) {
         const animationDuration = (event.duration || 1) * fps;
@@ -132,51 +175,53 @@ const renderElement = (event: TimelineEvent, frame: number, fps: number) => {
                 easing: Easing.inOut(Easing.ease),
             }
         );
+        
+        const angle = Math.atan2(event.to.y - event.from.y, event.to.x - event.from.x) * (180 / Math.PI);
+        const length = Math.sqrt(Math.pow(event.to.x - event.from.x, 2) + Math.pow(event.to.y - event.from.y, 2));
 
-        const currentX = interpolate(progress, [0, 1], [event.from.x, event.to.x]);
-        const currentY = interpolate(progress, [0, 1], [event.from.y, event.to.y]);
-
-        const angle = Math.atan2(event.to.y - event.from.y, event.to.x - event.from.x);
-        const length = Math.sqrt(
-            Math.pow(event.to.x - event.from.x, 2) + 
-            Math.pow(event.to.y - event.from.y, 2)
-        );
         const currentLength = length * progress;
 
-        const arrowStyle: React.CSSProperties = {
+        const arrowContainerStyle: React.CSSProperties = {
             position: 'absolute',
             left: event.from.x,
             top: event.from.y,
-            width: currentLength,
-            height: 4,
-            backgroundColor: '#007bff',
+            height: 2, 
+            width: length,
+            transform: `rotate(${angle}deg)`,
             transformOrigin: '0 50%',
-            transform: `rotate(${angle}rad)`,
             opacity,
         };
 
-        const arrowHeadStyle: React.CSSProperties = {
+        const lineStyle: React.CSSProperties = {
             position: 'absolute',
-            left: currentX - 10,
-            top: currentY - 10,
-            fontSize: 20,
-            opacity: progress > 0.8 ? opacity : 0,
-            transition: 'opacity 0.2s',
-            color: '#007bff'
+            height: '100%',
+            width: `${progress * 100}%`,
+            backgroundColor: '#000000',
+        };
+
+        const headStyle: React.CSSProperties = {
+            position: 'absolute',
+            left: currentLength - 10,
+            top: -4, 
+            width: 0,
+            height: 0,
+            borderStyle: 'solid',
+            borderWidth: '5px 0 5px 10px',
+            borderColor: 'transparent transparent transparent #000000',
         };
 
         return (
-            <>
-                <div style={arrowStyle} />
-                <div style={arrowHeadStyle}>▶</div>
-            </>
+            <div style={arrowContainerStyle}>
+                <div style={lineStyle} />
+                <div style={headStyle} />
+            </div>
         );
     }
 
     return null;
 };
 
-export const Main: React.FC<z.infer<typeof mainSchema>> = ({ timeline }) => {
+export const Main: React.FC<z.infer<typeof mainSchema>> = ({ timeline, canvas }) => {
     const frame = useCurrentFrame();
     const { fps } = useVideoConfig();
 
@@ -195,10 +240,10 @@ export const Main: React.FC<z.infer<typeof mainSchema>> = ({ timeline }) => {
     }
 
     return (
-        <AbsoluteFill style={{ backgroundColor: '#1A1A1A', fontFamily }}>
-            {timeline.map((event) => (
-                <React.Fragment key={event.elementId}>
-                    {renderElement(event, frame, fps)}
+        <AbsoluteFill style={{ backgroundColor: canvas.backgroundColor, fontFamily: font.fontFamily }}>
+            {timeline.map((event, index) => (
+                <React.Fragment key={`${event.elementId}-${index}`}>
+                    {renderElement(event, frame, fps, timeline)}
                 </React.Fragment>
             ))}
         </AbsoluteFill>

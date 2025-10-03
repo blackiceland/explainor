@@ -20,6 +20,7 @@ services:
       - "3030:3030"
     environment:
       - PUPPETEER_CACHE_DIR=/root/.cache/puppeteer
+      - PUPPETEER_ARGS=--no-sandbox --disable-setuid-sandbox --disable-dev-shm-usage
     volumes:
       - remotion-cache:/root/.cache
 

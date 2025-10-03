@@ -42,6 +42,10 @@ app.post('/render', async (req, res) => {
         console.log('Step 2: Loading compositions...');
         const compositions = await getCompositions(serveUrl, {
             inputProps: props,
+            chromiumOptions: {
+                disableWebSecurity: false,
+                ignoreCertificateErrors: false,
+            },
         });
         console.log(`Step 2: Found ${compositions.length} composition(s) ✓`);
 
@@ -58,6 +62,10 @@ app.post('/render', async (req, res) => {
             codec: 'h264',
             outputLocation,
             inputProps: props,
+            chromiumOptions: {
+                disableWebSecurity: false,
+                ignoreCertificateErrors: false,
+            },
             onProgress: ({ progress, renderedFrames, encodedFrames }) => {
                 const percent = Math.round(progress * 100);
                 console.log(`Rendering: ${percent}% (${renderedFrames}/${composition.durationInFrames} frames rendered, ${encodedFrames} encoded)`);

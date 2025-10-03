@@ -17,8 +17,10 @@ const iconMap: Record<string, React.ElementType> = {
 
 export const Icon: React.FC<{
     asset: string;
-    className?: string;
-}> = ({ asset, className }) => {
+    width?: number;
+    height?: number;
+    strokeWidth?: number;
+}> = ({ asset, width = 96, height = 96, strokeWidth = 2 }) => {
     const IconComponent = iconMap[asset] || iconMap.default;
-    return <IconComponent className={className} />;
+    return <IconComponent style={{ width, height, strokeWidth }} />;
 };

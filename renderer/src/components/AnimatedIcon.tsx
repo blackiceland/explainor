@@ -1,5 +1,10 @@
 import { Lottie } from '@remotion/lottie';
 import React, { useEffect, useState } from 'react';
+import serverProcessing from '../assets/server-processing.json';
+
+const animationMap: Record<string, any> = {
+    'server-processing': serverProcessing,
+};
 
 export const AnimatedIcon: React.FC<{
     asset: string;
@@ -7,13 +12,18 @@ export const AnimatedIcon: React.FC<{
     const [animationData, setAnimationData] = useState<any | null>(null);
 
     useEffect(() => {
-        // Lottie animations are typically hosted online.
-        // For this example, we'll assume the 'asset' is a URL to a JSON file.
+        // Check if it's a built-in animation
+        if (animationMap[asset]) {
+            setAnimationData(animationMap[asset]);
+            return;
+        }
+
+        // Otherwise, try to fetch it as a URL
         fetch(asset)
             .then((res) => res.json())
             .then(setAnimationData)
             .catch((err) => {
-                console.error("Failed to load Lottie animation:", err)
+                console.error("Failed to load Lottie animation:", err);
             });
     }, [asset]);
 
@@ -21,5 +31,9 @@ export const AnimatedIcon: React.FC<{
         return null;
     }
 
-    return <Lottie animationData={animationData} style={{width: 150, height: 150}} />;
+    return (
+        <div style={{ width: 150, height: 150, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Lottie animationData={animationData} />
+        </div>
+    );
 };

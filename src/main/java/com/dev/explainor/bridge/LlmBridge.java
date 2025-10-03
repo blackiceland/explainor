@@ -16,9 +16,9 @@ public class LlmBridge {
                   "canvas": {
                     "width": 1280,
                     "height": 720,
-                    "backgroundColor": "#f0f4f8"
+                    "backgroundColor": "#EAEAEA"
                   },
-                  "totalDuration": 8,
+                  "totalDuration": 10,
                   "timeline": [
                     {
                       "elementId": "client-icon",
@@ -26,20 +26,20 @@ public class LlmBridge {
                       "asset": "laptop",
                       "action": "appear",
                       "time": 0,
-                      "props": { "x": 200, "y": 360, "fontSize": 100 }
+                      "props": { "x": 200, "y": 360 }
                     },
                     {
                       "elementId": "client-text",
                       "type": "text",
-                      "content": "Клиент",
+                      "content": "Client",
                       "action": "appear",
                       "time": 0.3,
                       "props": { "x": 200, "y": 480, "fontSize": 32 }
                     },
                     {
                       "elementId": "server-icon",
-                      "type": "animated-icon",
-                      "asset": "https://assets9.lottiefiles.com/packages/lf20_96b_kofh.json",
+                      "type": "icon",
+                      "asset": "server",
                       "action": "appear",
                       "time": 1,
                       "props": { "x": 1080, "y": 360 }
@@ -47,7 +47,7 @@ public class LlmBridge {
                     {
                       "elementId": "server-text",
                       "type": "text",
-                      "content": "Сервер",
+                      "content": "Server",
                       "action": "appear",
                       "time": 1.3,
                       "props": { "x": 1080, "y": 480, "fontSize": 32 }
@@ -61,30 +61,40 @@ public class LlmBridge {
                       "from": { "x": 280, "y": 360 },
                       "to": { "x": 1000, "y": 360 }
                     },
-                    {
-                      "elementId": "request-label",
-                      "type": "text",
-                      "content": "HTTP запрос",
-                      "action": "appear",
-                      "time": 2.5,
-                      "props": { "x": 640, "y": 310, "fontSize": 24 }
-                    },
-                    {
-                      "elementId": "response-arrow",
-                      "type": "arrow",
-                      "action": "animate",
-                      "time": 4.5,
-                      "duration": 1.5,
-                      "from": { "x": 1000, "y": 380 },
-                      "to": { "x": 280, "y": 380 }
-                    },
+                            {
+                              "elementId": "request-label",
+                              "type": "text",
+                              "content": "HTTP Request",
+                              "action": "appear",
+                              "time": 2.5,
+                              "props": { "x": 640, "y": 310, "fontSize": 24 }
+                            },
+                            {
+                              "elementId": "request-arrow",
+                              "action": "disappear",
+                              "time": 6.0
+                            },
+                            {
+                              "elementId": "request-label",
+                              "action": "disappear",
+                              "time": 6.0
+                            },
+                            {
+                              "elementId": "response-arrow",
+                              "type": "arrow",
+                              "action": "animate",
+                              "time": 6.5,
+                              "duration": 1.5,
+                              "from": { "x": 1000, "y": 360 },
+                              "to": { "x": 280, "y": 360 }
+                            },
                     {
                       "elementId": "response-label",
                       "type": "text",
-                      "content": "Ответ сервера",
+                      "content": "Server Response",
                       "action": "appear",
-                      "time": 5,
-                      "props": { "x": 640, "y": 430, "fontSize": 24 }
+                      "time": 7,
+                      "props": { "x": 640, "y": 410, "fontSize": 24 }
                     }
                   ]
                 }
