@@ -19,6 +19,9 @@ public class CreateEntityFactory implements CommandFactory {
     private static final double DEFAULT_ENTITY_WIDTH = 200;
     private static final double DEFAULT_ENTITY_HEIGHT = 120;
     private static final double APPEAR_DURATION = 1.0;
+    private static final String GROUP_SUFFIX = "_group";
+    private static final String SHAPE_SUFFIX = "_shape";
+    private static final String TEXT_SUFFIX = "_text";
 
     private final LayoutManager layoutManager;
 
@@ -43,9 +46,9 @@ public class CreateEntityFactory implements CommandFactory {
         );
         sceneState.registerEntity(sceneEntity);
 
-        String groupId = sceneEntity.id() + "_group";
-        String shapeId = sceneEntity.id() + "_shape";
-        String textId = sceneEntity.id() + "_text";
+        String groupId = sceneEntity.id() + GROUP_SUFFIX;
+        String shapeId = sceneEntity.id() + SHAPE_SUFFIX;
+        String textId = sceneEntity.id() + TEXT_SUFFIX;
 
         events.add(TimelineEvent.builder()
             .elementId(groupId)

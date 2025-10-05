@@ -1,11 +1,13 @@
 package com.dev.explainor.conductor.service;
 
 import com.dev.explainor.conductor.domain.SceneEntity;
+import lombok.Data;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+@Data
 public class SceneState {
     private double currentTime = 0.0;
     private final Map<String, SceneEntity> entities = new HashMap<>();
@@ -17,14 +19,11 @@ public class SceneState {
         this.canvasHeight = canvasHeight;
     }
 
-    public double getCurrentTime() {
-        return currentTime;
-    }
-
     public void advanceTime(double seconds) {
-        if (seconds > 0) {
-            this.currentTime += seconds;
+        if (seconds < 0) {
+            throw new IllegalArgumentException("Cannot advance time by negative value: " + seconds);
         }
+        this.currentTime += seconds;
     }
 
     public void registerEntity(SceneEntity entity) {
@@ -37,13 +36,5 @@ public class SceneState {
 
     public Map<String, SceneEntity> getEntities() {
         return Map.copyOf(entities);
-    }
-
-    public double getCanvasWidth() {
-        return canvasWidth;
-    }
-
-    public double getCanvasHeight() {
-        return canvasHeight;
     }
 }

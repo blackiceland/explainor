@@ -20,6 +20,8 @@ public class ConnectEntitiesFactory implements CommandFactory {
     private static final Logger log = LoggerFactory.getLogger(ConnectEntitiesFactory.class);
     private static final double ARROW_DURATION = 1.5;
     private static final double LABEL_APPEAR_OFFSET = 0.5;
+    private static final String ARROW_SUFFIX = "_arrow";
+    private static final String LABEL_SUFFIX = "_label";
 
     @Override
     public List<TimelineEvent> createTimelineEvents(Command command, SceneState sceneState) {
@@ -61,7 +63,7 @@ public class ConnectEntitiesFactory implements CommandFactory {
         );
 
         events.add(TimelineEvent.builder()
-            .elementId(connectCommand.id() + "_arrow")
+            .elementId(connectCommand.id() + ARROW_SUFFIX)
             .type("arrow")
             .action("animate")
             .time(arrowStartTime)
@@ -73,7 +75,7 @@ public class ConnectEntitiesFactory implements CommandFactory {
 
         if (connectCommand.params().label() != null && !connectCommand.params().label().isBlank()) {
             events.add(TimelineEvent.builder()
-                .elementId(connectCommand.id() + "_label")
+                .elementId(connectCommand.id() + LABEL_SUFFIX)
                 .type("text")
                 .action("appear")
                 .time(arrowStartTime + LABEL_APPEAR_OFFSET)

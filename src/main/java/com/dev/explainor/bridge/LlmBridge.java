@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -33,17 +34,28 @@ public class LlmBridge {
 
     public LlmBridge(@Value("${anthropic.api.key}") String apiKey,
                      @Value("classpath:system_prompt_v2.txt") Resource systemPromptResource,
-                     ObjectMapper objectMapper) throws IOException {
+                     ObjectMapper objectMapper) {
         this.webClient = WebClient.builder()
                 .baseUrl("https://api.anthropic.com")
                 .defaultHeader("x-api-key", apiKey)
                 .defaultHeader("anthropic-version", "2023-06-01")
                 .defaultHeader("content-type", "application/json")
                 .build();
-        this.systemPrompt = asString(systemPromptResource);
+        try {
+            this.systemPrompt = asString(systemPromptResource);
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to load system prompt from classpath", e);
+        }
         this.objectMapper = objectMapper;
     }
 
+    /**
+     * Calls the LLM translator to generate a high-level storyboard from a user prompt.
+     *
+     * @param prompt the user's request for an explainer video
+     * @return Mono containing the generated storyboard
+     * @throws RuntimeException if the LLM API call fails or returns invalid data
+     */
     public Mono<Storyboard> getAnimationStoryboard(String prompt) {
         Map<String, Object> requestBody = Map.of(
             "model", "claude-3-sonnet-20240229",
@@ -63,7 +75,7 @@ public class LlmBridge {
                 .bodyValue(requestBody)
                 .retrieve()
                 .onStatus(
-                    status -> status.isError(),
+                        HttpStatusCode::isError,
                     response -> response.bodyToMono(String.class)
                         .flatMap(errorBody -> {
                             log.error("Anthropic API error: {}", errorBody);

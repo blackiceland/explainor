@@ -4,8 +4,8 @@ import com.dev.explainor.api.dto.ExplainRequest;
 import com.dev.explainor.bridge.LlmBridge;
 import com.dev.explainor.conductor.service.ConductorService;
 import com.dev.explainor.renderer.RendererClient;
-import com.dev.explainor.renderer.domain.FinalTimeline;
 import com.fasterxml.jackson.databind.JsonNode;
+import jakarta.validation.Valid;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,8 +27,14 @@ public class ExplainController {
         this.conductorService = conductorService;
     }
 
+    /**
+     * Generates an explainer video from a user prompt.
+     *
+     * @param request the user's request containing the prompt
+     * @return Mono containing the render response with video URL
+     */
     @PostMapping(value = "/explain", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Mono<ResponseEntity<JsonNode>> explain(@RequestBody ExplainRequest request) {
+    public Mono<ResponseEntity<JsonNode>> explain(@RequestBody @Valid ExplainRequest request) {
         return llmBridge.getAnimationStoryboard(request.getPrompt())
             .map(conductorService::generateTimeline)
             .flatMap(rendererClient::renderVideo)
