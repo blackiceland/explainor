@@ -52,6 +52,15 @@ export const RemotionRoot: React.FC = () => {
                         backgroundColor: 'white',
                     },
                     timeline: [],
+                    camera: [],
+                }}
+                calculateMetadata={({ props }) => {
+                    return {
+                        durationInFrames: Math.ceil(props.totalDuration * 30),
+                        fps: 30,
+                        width: props.canvas.width,
+                        height: props.canvas.height,
+                    };
                 }}
             />
         </>

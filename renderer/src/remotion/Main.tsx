@@ -185,22 +185,7 @@ const RenderTimelineEvent: React.FC<{
     return null;
 };
 
-export const Main: React.FC<z.infer<typeof mainSchema>> = (props) => {
-    return (
-        <Composition
-            id="Main"
-            component={MainComponent}
-            durationInFrames={Math.ceil(props.totalDuration * 30)}
-            fps={30}
-            width={props.canvas.width}
-            height={props.canvas.height}
-            schema={mainSchema}
-            defaultProps={props}
-        />
-    );
-};
-
-const MainComponent: React.FC<z.infer<typeof mainSchema>> = ({ timeline, canvas, camera }) => {
+export const Main: React.FC<z.infer<typeof mainSchema>> = ({ timeline, canvas, totalDuration, camera }) => {
     const frame = useCurrentFrame();
     const { fps } = useVideoConfig();
 
