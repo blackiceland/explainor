@@ -97,8 +97,8 @@ public class ConnectEntitiesFactory implements CommandFactory {
                 .map(p -> new Coordinate(p.x(), p.y()))
                 .collect(Collectors.toList());
 
-        Coordinate fromPoint = new Coordinate(fromEdge.x(), fromEdge.y());
-        Coordinate toPoint = new Coordinate(toEdge.x(), toEdge.y());
+        Coordinate fromPoint = path.get(0);
+        Coordinate toPoint = path.get(path.size() - 1);
 
         events.add(TimelineEvent.builder()
             .elementId(connectCommand.id() + ARROW_SUFFIX)
@@ -115,6 +115,20 @@ public class ConnectEntitiesFactory implements CommandFactory {
         if (connectCommand.params().label() != null && !connectCommand.params().label().isBlank()) {
             double midX = (fromPoint.x() + toPoint.x()) / 2;
             double midY = (fromPoint.y() + toPoint.y()) / 2;
+            
+            double dx = toPoint.x() - fromPoint.x();
+            double dy = toPoint.y() - fromPoint.y();
+            double perpX = -dy;
+            double perpY = dx;
+            double length = Math.sqrt(perpX * perpX + perpY * perpY);
+            
+            if (length > 0) {
+                perpX = perpX / length * 40;
+                perpY = perpY / length * 40;
+            }
+            
+            double labelX = midX + perpX;
+            double labelY = midY + perpY;
 
             events.add(TimelineEvent.builder()
                 .elementId(connectCommand.id() + LABEL_SUFFIX)
@@ -123,9 +137,9 @@ public class ConnectEntitiesFactory implements CommandFactory {
                 .time(arrowStartTime + LABEL_APPEAR_OFFSET)
                 .content(connectCommand.params().label())
                 .props(Map.of(
-                    "x", midX,
-                    "y", midY - 30,
-                    "fontSize", 16
+                    "x", labelX,
+                    "y", labelY,
+                    "fontSize", 14
                 ))
                 .build()
             );

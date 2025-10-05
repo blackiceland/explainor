@@ -17,6 +17,10 @@ public class PathFinder {
             double canvasWidth,
             double canvasHeight) {
 
+        if (obstacles.isEmpty() || !lineIntersectsAnyObstacle(start, end, obstacles)) {
+            return List.of(start, end);
+        }
+
         int gridCellSize = calculateOptimalCellSize(canvasWidth, canvasHeight);
         int gridWidth = (int) Math.ceil(canvasWidth / gridCellSize);
         int gridHeight = (int) Math.ceil(canvasHeight / gridCellSize);
@@ -39,6 +43,58 @@ public class PathFinder {
         }
 
         return simplifyPath(convertToPoints(path, gridCellSize));
+    }
+
+    private static boolean lineIntersectsAnyObstacle(Point start, Point end, Collection<SceneEntity> obstacles) {
+        for (SceneEntity obstacle : obstacles) {
+            double obstacleMinX = obstacle.x() - ENTITY_PADDING;
+            double obstacleMaxX = obstacle.x() + obstacle.width() + ENTITY_PADDING;
+            double obstacleMinY = obstacle.y() - ENTITY_PADDING;
+            double obstacleMaxY = obstacle.y() + obstacle.height() + ENTITY_PADDING;
+
+            if (lineIntersectsRectangle(start.x(), start.y(), end.x(), end.y(),
+                    obstacleMinX, obstacleMinY, obstacleMaxX, obstacleMaxY)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean lineIntersectsRectangle(double x1, double y1, double x2, double y2,
+                                                   double rectMinX, double rectMinY, double rectMaxX, double rectMaxY) {
+        if ((x1 < rectMinX && x2 < rectMinX) || (x1 > rectMaxX && x2 > rectMaxX) ||
+            (y1 < rectMinY && y2 < rectMinY) || (y1 > rectMaxY && y2 > rectMaxY)) {
+            return false;
+        }
+
+        if ((x1 >= rectMinX && x1 <= rectMaxX && y1 >= rectMinY && y1 <= rectMaxY) ||
+            (x2 >= rectMinX && x2 <= rectMaxX && y2 >= rectMinY && y2 <= rectMaxY)) {
+            return true;
+        }
+
+        double[] intersections = {
+            lineIntersectsSegment(x1, y1, x2, y2, rectMinX, rectMinY, rectMaxX, rectMinY),
+            lineIntersectsSegment(x1, y1, x2, y2, rectMaxX, rectMinY, rectMaxX, rectMaxY),
+            lineIntersectsSegment(x1, y1, x2, y2, rectMaxX, rectMaxY, rectMinX, rectMaxY),
+            lineIntersectsSegment(x1, y1, x2, y2, rectMinX, rectMaxY, rectMinX, rectMinY)
+        };
+
+        for (double t : intersections) {
+            if (t >= 0 && t <= 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static double lineIntersectsSegment(double x1, double y1, double x2, double y2,
+                                               double x3, double y3, double x4, double y4) {
+        double denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+        if (Math.abs(denom) < 1e-10) {
+            return -1;
+        }
+        double t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denom;
+        return t;
     }
 
     private static int calculateOptimalCellSize(double canvasWidth, double canvasHeight) {

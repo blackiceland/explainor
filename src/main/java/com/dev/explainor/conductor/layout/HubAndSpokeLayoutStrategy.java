@@ -12,7 +12,8 @@ import java.util.Map;
 @Component
 public class HubAndSpokeLayoutStrategy implements LayoutStrategy {
 
-    private static final double HUB_RADIUS = 250.0;
+    private static final double MIN_RADIUS = 250.0;
+    private static final double RADIUS_PER_SPOKE = 30.0;
 
     @Override
     public Map<String, Point> calculatePositions(Graph<String, DefaultEdge> graph, SceneState sceneState) {
@@ -26,10 +27,11 @@ public class HubAndSpokeLayoutStrategy implements LayoutStrategy {
         String hubId = findHub(graph);
         if (hubId == null) {
             List<String> allNodes = graph.vertexSet().stream().toList();
+            double radius = Math.max(MIN_RADIUS, MIN_RADIUS + allNodes.size() * RADIUS_PER_SPOKE);
             for (int i = 0; i < allNodes.size(); i++) {
                 double angle = 2 * Math.PI * i / allNodes.size();
-                double x = centerX + HUB_RADIUS * Math.cos(angle);
-                double y = centerY + HUB_RADIUS * Math.sin(angle);
+                double x = centerX + radius * Math.cos(angle);
+                double y = centerY + radius * Math.sin(angle);
                 positions.put(allNodes.get(i), new Point(x, y));
             }
             return positions;
@@ -42,10 +44,12 @@ public class HubAndSpokeLayoutStrategy implements LayoutStrategy {
                 .toList();
 
         int spokesCount = spokes.size();
+        double radius = Math.max(MIN_RADIUS, MIN_RADIUS + spokesCount * RADIUS_PER_SPOKE);
+        
         for (int i = 0; i < spokesCount; i++) {
             double angle = 2 * Math.PI * i / spokesCount;
-            double x = centerX + HUB_RADIUS * Math.cos(angle);
-            double y = centerY + HUB_RADIUS * Math.sin(angle);
+            double x = centerX + radius * Math.cos(angle);
+            double y = centerY + radius * Math.sin(angle);
             positions.put(spokes.get(i), new Point(x, y));
         }
 
