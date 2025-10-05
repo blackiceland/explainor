@@ -17,7 +17,8 @@ class FocusOnFactoryTest {
     @BeforeEach
     void setUp() {
         factory = new FocusOnFactory();
-        sceneState = new SceneState(1280, 720);
+        org.jgrapht.Graph<String, org.jgrapht.graph.DefaultEdge> graph = new org.jgrapht.graph.SimpleDirectedGraph<>(org.jgrapht.graph.DefaultEdge.class);
+        sceneState = new SceneState(1280, 720, graph);
     }
 
     @Test

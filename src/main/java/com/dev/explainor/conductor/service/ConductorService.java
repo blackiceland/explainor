@@ -1,14 +1,18 @@
 package com.dev.explainor.conductor.service;
 
 import com.dev.explainor.conductor.domain.Command;
+import com.dev.explainor.conductor.domain.ConnectEntitiesCommand;
+import com.dev.explainor.conductor.domain.CreateEntityCommand;
 import com.dev.explainor.conductor.domain.Storyboard;
 import com.dev.explainor.conductor.factory.CommandFactory;
-import com.dev.explainor.conductor.layout.LayoutManager;
 import com.dev.explainor.conductor.validation.StoryboardValidator;
-import com.dev.explainor.renderer.domain.Canvas;
 import com.dev.explainor.renderer.domain.CameraEvent;
+import com.dev.explainor.renderer.domain.Canvas;
 import com.dev.explainor.renderer.domain.FinalTimeline;
 import com.dev.explainor.renderer.domain.TimelineEvent;
+import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.SimpleDirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -50,7 +54,8 @@ public class ConductorService {
 
         log.info("Processing storyboard with {} commands", storyboard.commands().size());
 
-        SceneState sceneState = new SceneState(DEFAULT_CANVAS_WIDTH, DEFAULT_CANVAS_HEIGHT);
+        Graph<String, DefaultEdge> connectionsGraph = buildConnectionsGraph(storyboard);
+        SceneState sceneState = new SceneState(DEFAULT_CANVAS_WIDTH, DEFAULT_CANVAS_HEIGHT, connectionsGraph);
         List<TimelineEvent> allEvents = new ArrayList<>();
 
         for (Command command : storyboard.commands()) {
@@ -65,7 +70,6 @@ public class ConductorService {
             allEvents.addAll(events);
         }
 
-        // Separate camera events from timeline events
         List<TimelineEvent> timelineEvents = allEvents.stream()
             .filter(e -> !"camera".equals(e.type()))
             .collect(Collectors.toList());
@@ -73,7 +77,7 @@ public class ConductorService {
         List<CameraEvent> cameraEvents = allEvents.stream()
             .filter(e -> "camera".equals(e.type()))
             .map(e -> new CameraEvent(
-                "pan", // or "zoom", but for now use "pan"
+                "pan",
                 e.time(),
                 e.duration() != null ? e.duration() : 0.0,
                 new CameraEvent.CameraTarget(
@@ -91,5 +95,30 @@ public class ConductorService {
             timelineEvents.size(), cameraEvents.size(), totalDuration);
 
         return new FinalTimeline(canvas, totalDuration, timelineEvents, cameraEvents);
+    }
+
+    private Graph<String, DefaultEdge> buildConnectionsGraph(Storyboard storyboard) {
+        Graph<String, DefaultEdge> graph = new SimpleDirectedGraph<>(DefaultEdge.class);
+
+        storyboard.commands().stream()
+                .filter(cmd -> cmd instanceof CreateEntityCommand)
+                .map(cmd -> ((CreateEntityCommand) cmd).id())
+                .forEach(graph::addVertex);
+
+        storyboard.commands().stream()
+                .filter(cmd -> cmd instanceof ConnectEntitiesCommand)
+                .map(cmd -> (ConnectEntitiesCommand) cmd)
+                .forEach(cmd -> {
+                    String from = cmd.params().from();
+                    String to = cmd.params().to();
+                    if (graph.containsVertex(from) && graph.containsVertex(to)) {
+                        graph.addEdge(from, to);
+                    }
+                });
+
+        log.debug("Built connections graph with {} vertices and {} edges",
+                graph.vertexSet().size(), graph.edgeSet().size());
+
+        return graph;
     }
 }

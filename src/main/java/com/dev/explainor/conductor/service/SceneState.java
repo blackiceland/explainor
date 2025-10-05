@@ -2,6 +2,8 @@ package com.dev.explainor.conductor.service;
 
 import com.dev.explainor.conductor.domain.SceneEntity;
 import lombok.Data;
+import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultEdge;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,10 +15,12 @@ public class SceneState {
     private final Map<String, SceneEntity> entities = new HashMap<>();
     private final double canvasWidth;
     private final double canvasHeight;
+    private final Graph<String, DefaultEdge> connectionsGraph;
 
-    public SceneState(double canvasWidth, double canvasHeight) {
+    public SceneState(double canvasWidth, double canvasHeight, Graph<String, DefaultEdge> connectionsGraph) {
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
+        this.connectionsGraph = connectionsGraph;
     }
 
     public void advanceTime(double seconds) {

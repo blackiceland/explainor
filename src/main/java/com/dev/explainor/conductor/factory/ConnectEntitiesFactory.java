@@ -3,6 +3,9 @@ package com.dev.explainor.conductor.factory;
 import com.dev.explainor.conductor.domain.Command;
 import com.dev.explainor.conductor.domain.ConnectEntitiesCommand;
 import com.dev.explainor.conductor.domain.SceneEntity;
+import com.dev.explainor.conductor.layout.ArrowRoutingHelper;
+import com.dev.explainor.conductor.layout.PathFinder;
+import com.dev.explainor.conductor.layout.Point;
 import com.dev.explainor.conductor.service.SceneState;
 import com.dev.explainor.renderer.domain.Coordinate;
 import com.dev.explainor.renderer.domain.TimelineEvent;
@@ -11,9 +14,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Component
 public class ConnectEntitiesFactory implements CommandFactory {
@@ -54,14 +59,46 @@ public class ConnectEntitiesFactory implements CommandFactory {
         SceneEntity fromEntity = fromEntityOpt.get();
         SceneEntity toEntity = toEntityOpt.get();
 
-        Coordinate fromPoint = new Coordinate(
+        Point fromCenter = new Point(
             fromEntity.x() + fromEntity.width() / 2,
             fromEntity.y() + fromEntity.height() / 2
         );
-        Coordinate toPoint = new Coordinate(
+        Point toCenter = new Point(
             toEntity.x() + toEntity.width() / 2,
             toEntity.y() + toEntity.height() / 2
         );
+
+        Point fromEdge = ArrowRoutingHelper.calculateEdgePoint(
+            fromCenter, 
+            toCenter, 
+            fromEntity.width(), 
+            fromEntity.height()
+        );
+        Point toEdge = ArrowRoutingHelper.calculateEdgePoint(
+            toCenter, 
+            fromCenter, 
+            toEntity.width(), 
+            toEntity.height()
+        );
+
+        Collection<SceneEntity> obstacles = sceneState.getEntities().values().stream()
+                .filter(e -> !e.id().equals(fromEntity.id()) && !e.id().equals(toEntity.id()))
+                .collect(Collectors.toList());
+
+        List<Point> pathPoints = PathFinder.findOrthogonalPath(
+                fromEdge,
+                toEdge,
+                obstacles,
+                sceneState.getCanvasWidth(),
+                sceneState.getCanvasHeight()
+        );
+
+        List<Coordinate> path = pathPoints.stream()
+                .map(p -> new Coordinate(p.x(), p.y()))
+                .collect(Collectors.toList());
+
+        Coordinate fromPoint = new Coordinate(fromEdge.x(), fromEdge.y());
+        Coordinate toPoint = new Coordinate(toEdge.x(), toEdge.y());
 
         events.add(TimelineEvent.builder()
             .elementId(connectCommand.id() + ARROW_SUFFIX)
@@ -71,6 +108,7 @@ public class ConnectEntitiesFactory implements CommandFactory {
             .duration(ARROW_DURATION)
             .from(fromPoint)
             .to(toPoint)
+            .path(path.size() > 2 ? path : null)
             .build()
         );
 

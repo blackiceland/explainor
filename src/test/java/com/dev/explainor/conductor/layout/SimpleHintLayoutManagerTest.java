@@ -6,6 +6,9 @@ import com.dev.explainor.conductor.domain.ConnectEntitiesParams;
 import com.dev.explainor.conductor.domain.CreateEntityCommand;
 import com.dev.explainor.conductor.domain.CreateEntityParams;
 import com.dev.explainor.conductor.service.SceneState;
+import org.jgrapht.Graph;
+import org.jgrapht.graph.DefaultEdge;
+import org.jgrapht.graph.SimpleDirectedGraph;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +22,8 @@ class SimpleHintLayoutManagerTest {
     @BeforeEach
     void setUp() {
         layoutManager = new SimpleHintLayoutManager();
-        sceneState = new SceneState(1280, 720);
+        Graph<String, DefaultEdge> graph = new SimpleDirectedGraph<>(DefaultEdge.class);
+        sceneState = new SceneState(1280, 720, graph);
     }
 
     @Test
@@ -217,7 +221,8 @@ class SimpleHintLayoutManagerTest {
 
     @Test
     void shouldScalePositionForDifferentCanvasWidth() {
-        SceneState wideCanvas = new SceneState(1920, 720);
+        Graph<String, DefaultEdge> graph = new SimpleDirectedGraph<>(DefaultEdge.class);
+        SceneState wideCanvas = new SceneState(1920, 720, graph);
         CreateEntityCommand command = new CreateEntityCommand(
             "entity",
             new CreateEntityParams("Label", null, null, "left")
@@ -231,7 +236,8 @@ class SimpleHintLayoutManagerTest {
 
     @Test
     void shouldScalePositionForDifferentCanvasHeight() {
-        SceneState tallCanvas = new SceneState(1280, 1080);
+        Graph<String, DefaultEdge> graph = new SimpleDirectedGraph<>(DefaultEdge.class);
+        SceneState tallCanvas = new SceneState(1280, 1080, graph);
         CreateEntityCommand command = new CreateEntityCommand(
             "entity",
             new CreateEntityParams("Label", null, null, "top")

@@ -27,7 +27,8 @@ class CreateEntityFactoryTest {
     void setUp() {
         layoutManager = new SimpleHintLayoutManager();
         factory = new CreateEntityFactory(layoutManager);
-        sceneState = new SceneState(1280, 720);
+        org.jgrapht.Graph<String, org.jgrapht.graph.DefaultEdge> graph = new org.jgrapht.graph.SimpleDirectedGraph<>(org.jgrapht.graph.DefaultEdge.class);
+        sceneState = new SceneState(1280, 720, graph);
     }
 
     @Test

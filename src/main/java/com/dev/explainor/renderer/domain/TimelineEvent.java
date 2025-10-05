@@ -17,7 +17,8 @@ public record TimelineEvent(
     String content,
     AssetReference asset,
     Coordinate from,
-    Coordinate to
+    Coordinate to,
+    List<Coordinate> path
 ) {
     public static Builder builder() {
         return new Builder();
@@ -35,6 +36,7 @@ public record TimelineEvent(
         private AssetReference asset;
         private Coordinate from;
         private Coordinate to;
+        private List<Coordinate> path;
 
         public Builder elementId(String elementId) {
             this.elementId = elementId;
@@ -91,10 +93,15 @@ public record TimelineEvent(
             return this;
         }
 
+        public Builder path(List<Coordinate> path) {
+            this.path = path;
+            return this;
+        }
+
         public TimelineEvent build() {
             return new TimelineEvent(
                 elementId, type, action, time, duration,
-                props, children, content, asset, from, to
+                props, children, content, asset, from, to, path
             );
         }
     }

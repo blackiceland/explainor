@@ -19,6 +19,7 @@ const timelineEventSchema = z.object({
     duration: z.number().optional(),
     from: z.object({ x: z.number(), y: z.number() }).optional(),
     to: z.object({ x: z.number(), y: z.number() }).optional(),
+    path: z.array(z.object({ x: z.number(), y: z.number() })).optional(),
     children: z.array(z.string()).optional(),
     props: z.any().optional(),
 });
@@ -122,49 +123,118 @@ const RenderTimelineEvent: React.FC<{
     }
     
     if (event.type === 'arrow' && event.from && event.to) {
-        const angle = Math.atan2(event.to.y - event.from.y, event.to.x - event.from.x) * (180 / Math.PI);
-        const length = Math.sqrt(Math.pow(event.to.x - event.from.x, 2) + Math.pow(event.to.y - event.from.y, 2));
-
         const animationDuration = (event.duration || 1) * fps;
         const startFrame = event.time * fps;
         const progress = interpolate(frame, [startFrame, startFrame + animationDuration], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.inOut(Easing.ease) });
-        const currentLength = length * progress;
 
-        const arrowContainerStyle: React.CSSProperties = {
-            position: 'absolute',
-            left: event.from.x,
-            top: event.from.y,
-            height: 3,
-            width: length,
-            transform: `rotate(${angle}deg)`,
-            transformOrigin: '0 50%',
-            opacity,
-        };
+        if (event.path && event.path.length > 2) {
+            let totalLength = 0;
+            const segments: { from: { x: number; y: number }; to: { x: number; y: number }; length: number; startDist: number; endDist: number }[] = [];
 
-        const lineStyle: React.CSSProperties = {
-            position: 'absolute',
-            height: '100%',
-            width: `${progress * 100}%`,
-            backgroundColor: '#374151',
-        };
+            for (let i = 0; i < event.path.length - 1; i++) {
+                const from = event.path[i];
+                const to = event.path[i + 1];
+                const segmentLength = Math.sqrt(Math.pow(to.x - from.x, 2) + Math.pow(to.y - from.y, 2));
+                segments.push({
+                    from,
+                    to,
+                    length: segmentLength,
+                    startDist: totalLength,
+                    endDist: totalLength + segmentLength,
+                });
+                totalLength += segmentLength;
+            }
 
-        const headStyle: React.CSSProperties = {
-            position: 'absolute',
-            left: currentLength - 12,
-            top: -5,
-            width: 0,
-            height: 0,
-            borderStyle: 'solid',
-            borderWidth: '6px 0 6px 12px',
-            borderColor: 'transparent transparent transparent #374151',
-        };
+            const currentDist = totalLength * progress;
 
-        return (
-            <div style={arrowContainerStyle}>
-                <div style={lineStyle} />
-                {progress > 0.5 && <div style={headStyle} />}
-            </div>
-        );
+            return (
+                <svg
+                    style={{ position: 'absolute', left: 0, top: 0, width: '100%', height: '100%', opacity, pointerEvents: 'none' }}
+                    xmlns="http://www.w3.org/2000/svg"
+                >
+                    <defs>
+                        <marker
+                            id={`arrowhead-${event.elementId}`}
+                            markerWidth="10"
+                            markerHeight="10"
+                            refX="9"
+                            refY="3"
+                            orient="auto"
+                            markerUnits="strokeWidth"
+                        >
+                            <path d="M0,0 L0,6 L9,3 z" fill="#374151" />
+                        </marker>
+                    </defs>
+                    {segments.map((segment, idx) => {
+                        const segmentProgress = Math.max(0, Math.min(1,
+                            (currentDist - segment.startDist) / segment.length
+                        ));
+                        
+                        if (segmentProgress <= 0) return null;
+
+                        const endX = segment.from.x + (segment.to.x - segment.from.x) * segmentProgress;
+                        const endY = segment.from.y + (segment.to.y - segment.from.y) * segmentProgress;
+
+                        const isLastSegment = idx === segments.length - 1;
+                        const showArrowhead = isLastSegment && progress > 0.5;
+
+                        return (
+                            <line
+                                key={idx}
+                                x1={segment.from.x}
+                                y1={segment.from.y}
+                                x2={endX}
+                                y2={endY}
+                                stroke="#374151"
+                                strokeWidth="3"
+                                markerEnd={showArrowhead ? `url(#arrowhead-${event.elementId})` : undefined}
+                                filter="drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.15))"
+                            />
+                        );
+                    })}
+                </svg>
+            );
+        } else {
+            const angle = Math.atan2(event.to.y - event.from.y, event.to.x - event.from.x) * (180 / Math.PI);
+            const length = Math.sqrt(Math.pow(event.to.x - event.from.x, 2) + Math.pow(event.to.y - event.from.y, 2));
+            const currentLength = length * progress;
+
+            const arrowContainerStyle: React.CSSProperties = {
+                position: 'absolute',
+                left: event.from.x,
+                top: event.from.y,
+                height: 3,
+                width: length,
+                transform: `rotate(${angle}deg)`,
+                transformOrigin: '0 50%',
+                opacity,
+            };
+
+            const lineStyle: React.CSSProperties = {
+                position: 'absolute',
+                height: '100%',
+                width: `${progress * 100}%`,
+                backgroundColor: '#374151',
+            };
+
+            const headStyle: React.CSSProperties = {
+                position: 'absolute',
+                left: currentLength - 12,
+                top: -5,
+                width: 0,
+                height: 0,
+                borderStyle: 'solid',
+                borderWidth: '6px 0 6px 12px',
+                borderColor: 'transparent transparent transparent #374151',
+            };
+
+            return (
+                <div style={arrowContainerStyle}>
+                    <div style={lineStyle} />
+                    {progress > 0.5 && <div style={headStyle} />}
+                </div>
+            );
+        }
     }
     
     if (event.type === 'text') {
