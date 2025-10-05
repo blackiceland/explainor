@@ -10,32 +10,30 @@ import java.util.Objects;
 @Component
 public class SimpleHintLayoutManager implements LayoutManager {
 
-    private static final double PADDING_HORIZONTAL_PERCENT = 0.25;
-    private static final double PADDING_VERTICAL_PERCENT = 0.5;
+    private static final double MARGIN_PERCENT = 0.15;
+    private static final double CENTER_VERTICAL = 0.5;
 
     @Override
     public Point calculatePosition(Command command, SceneState sceneState) {
-        if (command instanceof CreateEntityCommand createEntityCommand) {
-            String hint = createEntityCommand.params().positionHint();
-            double canvasWidth = sceneState.getCanvasWidth();
-            double canvasHeight = sceneState.getCanvasHeight();
-
-            double defaultY = canvasHeight * PADDING_VERTICAL_PERCENT;
-
-            if (Objects.equals(hint, "left")) {
-                return new Point(canvasWidth * PADDING_HORIZONTAL_PERCENT, defaultY);
-            }
-
-            if (Objects.equals(hint, "right")) {
-                return new Point(canvasWidth * (1 - PADDING_HORIZONTAL_PERCENT), defaultY);
-            }
-
-            if (Objects.equals(hint, "center")) {
-                return new Point(canvasWidth * 0.5, defaultY);
-            }
+        if (!(command instanceof CreateEntityCommand createEntityCommand)) {
+            return new Point(sceneState.getCanvasWidth() * 0.5, sceneState.getCanvasHeight() * 0.5);
         }
 
-        // Default position if no hint or unsupported command
-        return new Point(sceneState.getCanvasWidth() * 0.5, sceneState.getCanvasHeight() * 0.5);
+        String hint = Objects.requireNonNullElse(createEntityCommand.params().positionHint(), "center");
+        double width = sceneState.getCanvasWidth();
+        double height = sceneState.getCanvasHeight();
+
+        return switch (hint) {
+            case "left" -> new Point(width * MARGIN_PERCENT, height * CENTER_VERTICAL);
+            case "right" -> new Point(width * (1 - MARGIN_PERCENT), height * CENTER_VERTICAL);
+            case "center" -> new Point(width * 0.5, height * CENTER_VERTICAL);
+            case "top" -> new Point(width * 0.75, height * MARGIN_PERCENT);
+            case "bottom" -> new Point(width * 0.75, height * (1 - MARGIN_PERCENT));
+            case "top-left" -> new Point(width * MARGIN_PERCENT, height * MARGIN_PERCENT);
+            case "top-right" -> new Point(width * (1 - MARGIN_PERCENT), height * MARGIN_PERCENT);
+            case "bottom-left" -> new Point(width * MARGIN_PERCENT, height * (1 - MARGIN_PERCENT));
+            case "bottom-right" -> new Point(width * (1 - MARGIN_PERCENT), height * (1 - MARGIN_PERCENT));
+            default -> new Point(width * 0.5, height * CENTER_VERTICAL);
+        };
     }
 }

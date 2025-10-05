@@ -4,28 +4,34 @@ import com.dev.explainor.conductor.domain.Command;
 import com.dev.explainor.conductor.domain.Storyboard;
 import com.dev.explainor.conductor.factory.CommandFactory;
 import com.dev.explainor.conductor.layout.LayoutManager;
+import com.dev.explainor.conductor.validation.StoryboardValidator;
 import com.dev.explainor.renderer.domain.Canvas;
+import com.dev.explainor.renderer.domain.CameraEvent;
 import com.dev.explainor.renderer.domain.FinalTimeline;
 import com.dev.explainor.renderer.domain.TimelineEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class ConductorService {
 
+    private static final Logger log = LoggerFactory.getLogger(ConductorService.class);
     private static final double DEFAULT_CANVAS_WIDTH = 1280;
     private static final double DEFAULT_CANVAS_HEIGHT = 720;
     private static final String DEFAULT_BACKGROUND_COLOR = "#DDDDDD";
 
-    private final LayoutManager layoutManager;
     private final List<CommandFactory> factories;
+    private final StoryboardValidator validator;
 
-    public ConductorService(LayoutManager layoutManager, List<CommandFactory> factories) {
-        this.layoutManager = layoutManager;
+    public ConductorService(List<CommandFactory> factories, StoryboardValidator validator) {
         this.factories = factories;
+        this.validator = validator;
     }
 
     /**
@@ -34,10 +40,15 @@ public class ConductorService {
      * @param storyboard the high-level commands from the LLM translator
      * @return FinalTimeline ready for rendering
      * @throws NullPointerException if storyboard is null
+     * @throws IllegalArgumentException if storyboard is invalid
      * @throws IllegalStateException if no factory supports a command
      */
     public FinalTimeline generateTimeline(Storyboard storyboard) {
         Objects.requireNonNull(storyboard, "Storyboard cannot be null");
+
+        validator.validate(storyboard);
+
+        log.info("Processing storyboard with {} commands", storyboard.commands().size());
 
         SceneState sceneState = new SceneState(DEFAULT_CANVAS_WIDTH, DEFAULT_CANVAS_HEIGHT);
         List<TimelineEvent> allEvents = new ArrayList<>();
@@ -54,9 +65,31 @@ public class ConductorService {
             allEvents.addAll(events);
         }
 
+        // Separate camera events from timeline events
+        List<TimelineEvent> timelineEvents = allEvents.stream()
+            .filter(e -> !"camera".equals(e.type()))
+            .collect(Collectors.toList());
+
+        List<CameraEvent> cameraEvents = allEvents.stream()
+            .filter(e -> "camera".equals(e.type()))
+            .map(e -> new CameraEvent(
+                "pan", // or "zoom", but for now use "pan"
+                e.time(),
+                e.duration() != null ? e.duration() : 0.0,
+                new CameraEvent.CameraTarget(
+                    e.props() != null ? (Double) e.props().get("x") : null,
+                    e.props() != null ? (Double) e.props().get("y") : null,
+                    e.props() != null ? (Double) e.props().get("scale") : null
+                )
+            ))
+            .collect(Collectors.toList());
+
         Canvas canvas = new Canvas((int) DEFAULT_CANVAS_WIDTH, (int) DEFAULT_CANVAS_HEIGHT, DEFAULT_BACKGROUND_COLOR);
         double totalDuration = sceneState.getCurrentTime();
 
-        return new FinalTimeline(canvas, totalDuration, allEvents);
+        log.info("Generated timeline with {} events, {} camera events, duration: {}s", 
+            timelineEvents.size(), cameraEvents.size(), totalDuration);
+
+        return new FinalTimeline(canvas, totalDuration, timelineEvents, cameraEvents);
     }
 }

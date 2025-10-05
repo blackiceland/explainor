@@ -8,6 +8,7 @@ import com.dev.explainor.conductor.factory.CommandFactory;
 import com.dev.explainor.conductor.factory.CreateEntityFactory;
 import com.dev.explainor.conductor.layout.LayoutManager;
 import com.dev.explainor.conductor.layout.SimpleHintLayoutManager;
+import com.dev.explainor.conductor.validation.StoryboardValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -22,8 +23,9 @@ class ConductorServiceFailureTest {
     @BeforeEach
     void setUp() {
         LayoutManager layoutManager = new SimpleHintLayoutManager();
+        StoryboardValidator validator = new StoryboardValidator();
         List<CommandFactory> factories = List.of(new CreateEntityFactory(layoutManager));
-        conductorService = new ConductorService(layoutManager, factories);
+        conductorService = new ConductorService(factories, validator);
     }
 
     @Test
@@ -58,15 +60,14 @@ class ConductorServiceFailureTest {
     @Test
     void shouldSuccessfullyProcessSupportedCommands() {
         Storyboard storyboard = new Storyboard(List.of(
-            new CreateEntityCommand("entity1", new CreateEntityParams("Label1", null, "left")),
-            new CreateEntityCommand("entity2", new CreateEntityParams("Label2", null, "right"))
+            new CreateEntityCommand("entity1", new CreateEntityParams("Label1", null, null, "left")),
+            new CreateEntityCommand("entity2", new CreateEntityParams("Label2", null, null, "right"))
         ));
 
         var timeline = conductorService.generateTimeline(storyboard);
 
         assertNotNull(timeline);
         assertEquals(2.0, timeline.totalDuration());
-        assertEquals(6, timeline.timeline().size());
+        assertEquals(2, timeline.timeline().size());
     }
 }
-

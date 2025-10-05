@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Component
@@ -34,7 +35,7 @@ public class ConnectEntitiesFactory implements CommandFactory {
 
         if (fromEntityOpt.isEmpty()) {
             String errorMsg = String.format(
-                "Cannot connect entities: source entity '%s' not found in scene", 
+                "Cannot connect entities: source entity '%s' not found in scene",
                 connectCommand.params().from()
             );
             log.error(errorMsg);
@@ -43,7 +44,7 @@ public class ConnectEntitiesFactory implements CommandFactory {
 
         if (toEntityOpt.isEmpty()) {
             String errorMsg = String.format(
-                "Cannot connect entities: target entity '%s' not found in scene", 
+                "Cannot connect entities: target entity '%s' not found in scene",
                 connectCommand.params().to()
             );
             log.error(errorMsg);
@@ -54,11 +55,11 @@ public class ConnectEntitiesFactory implements CommandFactory {
         SceneEntity toEntity = toEntityOpt.get();
 
         Coordinate fromPoint = new Coordinate(
-            fromEntity.x() + fromEntity.width() / 2, 
+            fromEntity.x() + fromEntity.width() / 2,
             fromEntity.y() + fromEntity.height() / 2
         );
         Coordinate toPoint = new Coordinate(
-            toEntity.x() + toEntity.width() / 2, 
+            toEntity.x() + toEntity.width() / 2,
             toEntity.y() + toEntity.height() / 2
         );
 
@@ -74,12 +75,20 @@ public class ConnectEntitiesFactory implements CommandFactory {
         );
 
         if (connectCommand.params().label() != null && !connectCommand.params().label().isBlank()) {
+            double midX = (fromPoint.x() + toPoint.x()) / 2;
+            double midY = (fromPoint.y() + toPoint.y()) / 2;
+
             events.add(TimelineEvent.builder()
                 .elementId(connectCommand.id() + LABEL_SUFFIX)
                 .type("text")
                 .action("appear")
                 .time(arrowStartTime + LABEL_APPEAR_OFFSET)
                 .content(connectCommand.params().label())
+                .props(Map.of(
+                    "x", midX,
+                    "y", midY - 30,
+                    "fontSize", 16
+                ))
                 .build()
             );
         }

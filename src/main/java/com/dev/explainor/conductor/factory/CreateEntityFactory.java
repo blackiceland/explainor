@@ -9,7 +9,7 @@ import com.dev.explainor.conductor.service.SceneState;
 import com.dev.explainor.renderer.domain.TimelineEvent;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -19,9 +19,7 @@ public class CreateEntityFactory implements CommandFactory {
     private static final double DEFAULT_ENTITY_WIDTH = 200;
     private static final double DEFAULT_ENTITY_HEIGHT = 120;
     private static final double APPEAR_DURATION = 1.0;
-    private static final String GROUP_SUFFIX = "_group";
     private static final String SHAPE_SUFFIX = "_shape";
-    private static final String TEXT_SUFFIX = "_text";
 
     private final LayoutManager layoutManager;
 
@@ -32,7 +30,6 @@ public class CreateEntityFactory implements CommandFactory {
     @Override
     public List<TimelineEvent> createTimelineEvents(Command command, SceneState sceneState) {
         CreateEntityCommand createEntityCommand = (CreateEntityCommand) command;
-        List<TimelineEvent> events = new ArrayList<>();
         double startTime = sceneState.getCurrentTime();
 
         Point position = layoutManager.calculatePosition(createEntityCommand, sceneState);
@@ -46,54 +43,28 @@ public class CreateEntityFactory implements CommandFactory {
         );
         sceneState.registerEntity(sceneEntity);
 
-        String groupId = sceneEntity.id() + GROUP_SUFFIX;
         String shapeId = sceneEntity.id() + SHAPE_SUFFIX;
-        String textId = sceneEntity.id() + TEXT_SUFFIX;
-
-        events.add(TimelineEvent.builder()
-            .elementId(groupId)
-            .type("group")
-            .action("appear")
-            .time(startTime)
-            .props(Map.of(
-                "x", sceneEntity.x(),
-                "y", sceneEntity.y(),
-                "width", sceneEntity.width(),
-                "height", sceneEntity.height()
-            ))
-            .children(List.of(shapeId, textId))
-            .build()
-        );
-
-        events.add(TimelineEvent.builder()
+        
+        Map<String, Object> props = new HashMap<>();
+        props.put("x", sceneEntity.x());
+        props.put("y", sceneEntity.y());
+        props.put("width", sceneEntity.width());
+        props.put("height", sceneEntity.height());
+        props.put("label", createEntityCommand.params().label());
+        props.put("icon", createEntityCommand.params().icon());
+        props.put("shapeType", createEntityCommand.params().shape() != null ? createEntityCommand.params().shape() : "rectangle");
+        
+        TimelineEvent event = TimelineEvent.builder()
             .elementId(shapeId)
             .type("shape")
             .action("appear")
             .time(startTime)
-            .props(Map.of(
-                "shapeType", "rectangle",
-                "width", sceneEntity.width(),
-                "height", sceneEntity.height(),
-                "fillColor", "#FFFFFF",
-                "strokeColor", "#E0E0E0",
-                "strokeWidth", 1,
-                "radius", 16
-            ))
-            .build()
-        );
-
-        events.add(TimelineEvent.builder()
-            .elementId(textId)
-            .type("text")
-            .action("appear")
-            .time(startTime)
-            .content(createEntityCommand.params().label())
-            .build()
-        );
+            .props(props)
+            .build();
 
         sceneState.advanceTime(APPEAR_DURATION);
 
-        return events;
+        return List.of(event);
     }
 
     @Override

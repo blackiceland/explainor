@@ -5,6 +5,7 @@ import java.util.List;
 public record FinalTimeline(
     Canvas canvas,
     double totalDuration,
-    List<TimelineEvent> timeline
+    List<TimelineEvent> timeline,
+    List<CameraEvent> camera
 ) {
 }

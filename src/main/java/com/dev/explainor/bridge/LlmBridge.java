@@ -28,6 +28,10 @@ public class LlmBridge {
 
     private static final Logger log = LoggerFactory.getLogger(LlmBridge.class);
 
+    private static final String ANTHROPIC_API_URL = "https://api.anthropic.com";
+    private static final String ANTHROPIC_VERSION = "2023-06-01";
+    private static final String MODEL_NAME = "claude-3-7-sonnet-20250219";
+
     private final WebClient webClient;
     private final String systemPrompt;
     private final ObjectMapper objectMapper;
@@ -36,9 +40,9 @@ public class LlmBridge {
                      @Value("classpath:system_prompt_v2.txt") Resource systemPromptResource,
                      ObjectMapper objectMapper) {
         this.webClient = WebClient.builder()
-                .baseUrl("https://api.anthropic.com")
+                .baseUrl(ANTHROPIC_API_URL)
                 .defaultHeader("x-api-key", apiKey)
-                .defaultHeader("anthropic-version", "2023-06-01")
+                .defaultHeader("anthropic-version", ANTHROPIC_VERSION)
                 .defaultHeader("content-type", "application/json")
                 .build();
         try {
@@ -58,7 +62,7 @@ public class LlmBridge {
      */
     public Mono<Storyboard> getAnimationStoryboard(String prompt) {
         Map<String, Object> requestBody = Map.of(
-            "model", "claude-3-sonnet-20240229",
+            "model", MODEL_NAME,
             "max_tokens", 4096,
             "temperature", 0.0,
             "system", systemPrompt,
@@ -85,6 +89,8 @@ public class LlmBridge {
                 .bodyToMono(JsonNode.class)
                 .map(response -> {
                     try {
+                        log.info("Received response from Claude: {}", response);
+
                         if (!response.has("content") || response.get("content").isEmpty()) {
                             log.error("Invalid LLM response structure: {}", response);
                             throw new RuntimeException("Invalid LLM response: missing 'content' field");
@@ -97,7 +103,11 @@ public class LlmBridge {
                         }
 
                         String jsonResponse = contentNode.get("text").asText();
+                        log.info("Claude generated storyboard JSON: {}", jsonResponse);
+
                         List<Command> commands = objectMapper.readValue(jsonResponse, new TypeReference<>() {});
+                        log.info("Successfully parsed {} commands from storyboard", commands.size());
+
                         return new Storyboard(commands);
                     } catch (JsonProcessingException e) {
                         log.error("Failed to parse storyboard from LLM response: {}", response, e);

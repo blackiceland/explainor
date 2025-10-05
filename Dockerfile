@@ -1,12 +1,18 @@
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
 COPY pom.xml .
-RUN mvn dependency:go-offline -B
+RUN mvn dependency:go-offline -B --no-transfer-progress
 COPY src ./src
-RUN mvn clean install -DskipTests
+RUN mvn clean package -DskipTests -B --no-transfer-progress
+RUN java -Djarmode=layertools -jar target/*.jar extract --destination target/extracted
 
 FROM eclipse-temurin:21-jre-jammy
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
+
+COPY --from=build /app/target/extracted/dependencies/ ./
+COPY --from=build /app/target/extracted/spring-boot-loader/ ./
+COPY --from=build /app/target/extracted/snapshot-dependencies/ ./
+COPY --from=build /app/target/extracted/application/ ./
+
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]

@@ -10,6 +10,7 @@ You must use the following commands to build the storyboard:
     *   `id`: A unique, snake_case identifier (e.g., "web_client", "main_server").
     *   `params.label`: The text to display inside the box (e.g., "Client").
     *   `params.icon`: (Optional) The identifier for an icon to display.
+    *   `params.shape`: (Optional) The shape of the entity. Possible values: `rectangle`, `circle`. Default: `rectangle`.
     *   `params.positionHint`: A hint for placement. Valid values: "left", "right", "center", "top", "bottom".
 
 2.  **`connect_entities`**: Draws an animated arrow between two entities.

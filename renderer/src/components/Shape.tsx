@@ -1,56 +1,41 @@
 import React from 'react';
+import { Icon } from './Icon';
 
-type ShapeProps = {
+export const Shape: React.FC<{
     type: 'rectangle' | 'circle';
     width: number;
     height: number;
     fillColor?: string;
     strokeColor?: string;
     strokeWidth?: number;
-    radius?: number; 
-};
-
-export const Shape: React.FC<ShapeProps> = ({
-    type,
-    width,
-    height,
-    fillColor = 'transparent',
-    strokeColor = '#000000',
-    strokeWidth = 1,
-    radius = 8,
-}) => {
-    const commonProps = {
-        fill: fillColor,
-        stroke: strokeColor,
-        strokeWidth: strokeWidth,
+    radius?: number;
+    icon?: string;
+    label?: string;
+}> = ({ type, width, height, fillColor = '#FFFFFF', strokeColor = '#E0E0E0', strokeWidth = 1, radius = 16, icon, label }) => {
+    
+    const commonStyle: React.CSSProperties = {
+        width,
+        height,
+        backgroundColor: fillColor,
+        border: `${strokeWidth}px solid ${strokeColor}`,
+        borderRadius: type === 'circle' ? '50%' : radius,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '8px',
+        padding: '10px',
+        boxSizing: 'border-box',
     };
 
-    if (type === 'rectangle') {
-        return (
-            <svg width={width} height={height} style={{ overflow: 'visible' }}>
-                <rect 
-                    width={width} 
-                    height={height} 
-                    rx={radius} 
-                    {...commonProps} 
-                />
-            </svg>
-        );
-    }
-
-    if (type === 'circle') {
-        return (
-            <svg width={width} height={height} style={{ overflow: 'visible' }}>
-                <ellipse 
-                    cx={width / 2} 
-                    cy={height / 2} 
-                    rx={width / 2} 
-                    ry={height / 2} 
-                    {...commonProps} 
-                />
-            </svg>
-        );
-    }
-
-    return null;
+    return (
+        <div style={commonStyle}>
+            {icon && <Icon asset={icon} width={48} height={48} strokeWidth={1.5} />}
+            {label && (
+                <div style={{ fontSize: 20, fontWeight: '600', color: '#1F2937', textAlign: 'center' }}>
+                    {label}
+                </div>
+            )}
+        </div>
+    );
 };

@@ -41,3 +41,6 @@ renderer/.cache/
 
 !src/main/resources/system_prompt.txt
 !src/main/resources/system_prompt_v2.txt
+
+# Env files
+explainor.env
