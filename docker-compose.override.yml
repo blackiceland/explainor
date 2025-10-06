@@ -1,8 +1,9 @@
 version: '3.8'
 
 services:
-  renderer:
-    command: ["npm", "run", "dev"]
-    volumes:
-      - ./renderer:/usr/src/app
-      - /usr/src/app/node_modules
+  explainor-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      cache_from:
+        - explainor-genesis:latest

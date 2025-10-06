@@ -64,9 +64,9 @@ class GenesisConductorServiceTest {
             .findFirst()
             .orElseThrow();
 
-        assertEquals(0.0, clientNode.x());
+        assertEquals(-125.0, clientNode.x());
         assertEquals(0.0, clientNode.y());
-        assertEquals(150.0, serverNode.x());
+        assertEquals(125.0, serverNode.x());
         assertEquals(0.0, serverNode.y());
     }
 

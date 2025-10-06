@@ -2,13 +2,13 @@ version: '3.8'
 
 services:
   explainor-backend:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     env_file:
       - explainor.env
-    volumes:
-      - maven-cache:/root/.m2
     depends_on:
       - renderer
 
@@ -27,6 +27,5 @@ services:
       - remotion-browser-cache:/root/.cache
 
 volumes:
-  maven-cache:
   remotion-cache:
   remotion-browser-cache:

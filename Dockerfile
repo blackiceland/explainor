@@ -1,9 +1,14 @@
 FROM maven:3.9.6-eclipse-temurin-21 AS build
 WORKDIR /app
+
 COPY pom.xml .
-RUN mvn dependency:go-offline -B --no-transfer-progress
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn dependency:go-offline -B --no-transfer-progress
+
 COPY src ./src
-RUN mvn clean package -DskipTests -B --no-transfer-progress
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn clean package -DskipTests -B --no-transfer-progress -Dmaven.test.skip=true
+
 RUN java -Djarmode=layertools -jar target/*.jar extract --destination target/extracted
 
 FROM eclipse-temurin:21-jre-jammy

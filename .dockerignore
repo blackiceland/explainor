@@ -1,0 +1,41 @@
+# Maven
+target/
+!target/*.jar
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+
+# Test
+test-output.timeline.json
+TESTING-STAGE1.md
+
+# Frontend (собирается отдельно)
+renderer/node_modules/
+renderer/dist/
+renderer/build/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+*.env
+!explainor.env
+
+# Documentation
+*.md
+!README.md
+
