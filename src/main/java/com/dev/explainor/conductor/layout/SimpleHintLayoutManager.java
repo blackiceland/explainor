@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
+@Deprecated(since = "Genesis", forRemoval = true)
 @Component
 public class SimpleHintLayoutManager implements LayoutManager {
 

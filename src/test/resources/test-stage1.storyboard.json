@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "commands": [
+    {
+      "command": "create_entity",
+      "id": "client",
+      "params": {
+        "label": "Client",
+        "icon": "computer",
+        "positionHint": "left"
+      }
+    },
+    {
+      "command": "create_entity",
+      "id": "server",
+      "params": {
+        "label": "Server",
+        "icon": "server",
+        "positionHint": "right"
+      }
+    },
+    {
+      "command": "connect_entities",
+      "id": "request",
+      "params": {
+        "from": "client",
+        "to": "server",
+        "label": "HTTP Request"
+      }
+    }
+  ]
+}
+

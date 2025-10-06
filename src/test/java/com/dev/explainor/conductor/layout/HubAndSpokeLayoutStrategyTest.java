@@ -5,12 +5,14 @@ import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Disabled("Legacy conductor code - replaced by Genesis layout engine")
 class HubAndSpokeLayoutStrategyTest {
 
     private HubAndSpokeLayoutStrategy strategy;

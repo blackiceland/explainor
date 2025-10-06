@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated(since = "Genesis", forRemoval = true)
 @Component
 public class GraphBasedLayoutManager implements LayoutManager {
 

@@ -1,6 +1,7 @@
 package com.dev.explainor.conductor.layout;
 
 import com.dev.explainor.conductor.domain.SceneEntity;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -8,6 +9,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Disabled("Legacy conductor code - replaced by Genesis layout engine")
 class PathFinderTest {
 
     private static final double CANVAS_WIDTH = 1280.0;

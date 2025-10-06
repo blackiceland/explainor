@@ -4,6 +4,7 @@ import com.dev.explainor.conductor.domain.SceneEntity;
 
 import java.util.*;
 
+@Deprecated(since = "Genesis", forRemoval = true)
 public class PathFinder {
 
     private static final int MIN_GRID_CELL_SIZE = 10;

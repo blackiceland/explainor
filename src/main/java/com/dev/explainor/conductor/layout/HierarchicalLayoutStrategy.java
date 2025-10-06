@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
+@Deprecated(since = "Genesis", forRemoval = true)
 @Component
 public class HierarchicalLayoutStrategy implements LayoutStrategy {
 

@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Deprecated(since = "Genesis", forRemoval = true)
 @Component
 public class LinearChainLayoutStrategy implements LayoutStrategy {
 
