@@ -1,6 +1,12 @@
 package com.dev.explainor.genesis.service;
 
+import com.dev.explainor.genesis.domain.FocusOnCommand;
 import com.dev.explainor.genesis.dto.*;
+import com.dev.explainor.genesis.domain.Command;
+import com.dev.explainor.genesis.domain.CreateEntityCommand;
+import com.dev.explainor.genesis.domain.ConnectEntitiesCommand;
+import com.dev.explainor.genesis.domain.PauseCommand;
+import org.springframework.beans.factory.annotation.Qualifier;
 import com.dev.explainor.genesis.layout.LayoutManager;
 import com.dev.explainor.genesis.layout.model.*;
 import com.dev.explainor.genesis.validation.StoryboardValidator;
@@ -22,9 +28,11 @@ public class GenesisConductorService {
     private final LayoutManager layoutManager;
     private final StoryboardValidator validator;
 
-    public GenesisConductorService(LayoutManager layoutManager) {
+    public GenesisConductorService(
+            @Qualifier("genesisLayoutManager") LayoutManager layoutManager,
+            StoryboardValidator validator) {
         this.layoutManager = layoutManager;
-        this.validator = new StoryboardValidator();
+        this.validator = validator;
     }
 
     public FinalTimelineV1 choreograph(StoryboardV1 storyboard) {
@@ -39,7 +47,7 @@ public class GenesisConductorService {
         List<LayoutNode> layoutNodes = extractionResult.nodes();
         List<LayoutEdge> layoutEdges = extractionResult.edges();
 
-        LayoutConstraints constraints = new LayoutConstraints(
+        LayoutConstraints constraints = LayoutConstraints.create(
             DEFAULT_CANVAS_WIDTH, 
             DEFAULT_CANVAS_HEIGHT
         );
@@ -86,7 +94,7 @@ public class GenesisConductorService {
         List<LayoutNode> nodes = new ArrayList<>();
         List<LayoutEdge> edges = new ArrayList<>();
         
-        for (StoryboardCommand command : storyboard.commands()) {
+        for (Command command : storyboard.commands()) {
             switch (command) {
                 case CreateEntityCommand createCmd -> nodes.add(new LayoutNode(
                     createCmd.id(),
@@ -101,6 +109,8 @@ public class GenesisConductorService {
                     connectCmd.params().label()
                 ));
                 case PauseCommand pauseCmd -> {
+                }
+                case FocusOnCommand focusCmd -> {
                 }
             }
         }

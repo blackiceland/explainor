@@ -21,21 +21,10 @@ public class GenesisController {
     }
 
     @PostMapping("/choreograph")
-    public ResponseEntity<?> choreograph(@RequestBody @jakarta.validation.Valid StoryboardV1 storyboard) {
+    public ResponseEntity<FinalTimelineV1> choreograph(@RequestBody @jakarta.validation.Valid StoryboardV1 storyboard) {
         log.info("Received choreograph request for storyboard v{}", storyboard.version());
-        
-        try {
-            FinalTimelineV1 timeline = conductorService.choreograph(storyboard);
-            return ResponseEntity.ok(timeline);
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid request: {}", e.getMessage());
-            ErrorResponse error = ErrorResponse.of("VALIDATION_ERROR", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
-        } catch (Exception e) {
-            log.error("Internal error during choreography", e);
-            ErrorResponse error = ErrorResponse.of("INTERNAL_ERROR", "An unexpected error occurred");
-            return ResponseEntity.internalServerError().body(error);
-        }
+        FinalTimelineV1 timeline = conductorService.choreograph(storyboard);
+        return ResponseEntity.ok(timeline);
     }
 
     @GetMapping("/health")

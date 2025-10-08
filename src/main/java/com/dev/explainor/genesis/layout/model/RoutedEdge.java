@@ -1,6 +1,6 @@
 package com.dev.explainor.genesis.layout.model;
 
-import com.dev.explainor.genesis.dto.Point;
+import com.dev.explainor.genesis.domain.Point;
 
 import java.util.List;
 

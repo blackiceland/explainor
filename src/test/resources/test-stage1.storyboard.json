@@ -2,7 +2,7 @@
   "version": "1.0.0",
   "commands": [
     {
-      "command": "create_entity",
+      "type": "create_entity",
       "id": "client",
       "params": {
         "label": "Client",
@@ -10,7 +10,7 @@
       }
     },
     {
-      "command": "create_entity",
+      "type": "create_entity",
       "id": "server",
       "params": {
         "label": "Server",
@@ -18,7 +18,7 @@
       }
     },
     {
-      "command": "connect_entities",
+      "type": "connect_entities",
       "id": "request",
       "params": {
         "from": "client",

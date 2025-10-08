@@ -1,6 +1,10 @@
 package com.dev.explainor.genesis.validation;
 
 import com.dev.explainor.genesis.dto.*;
+import com.dev.explainor.genesis.domain.Command;
+import com.dev.explainor.genesis.domain.ConnectEntitiesCommand;
+import com.dev.explainor.genesis.domain.ConnectEntitiesParams;
+import com.dev.explainor.genesis.domain.CreateEntityCommand;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -11,7 +15,7 @@ public class StoryboardValidator {
         Set<String> entityIds = new HashSet<>();
         Set<String> allIds = new HashSet<>();
 
-        for (StoryboardCommand command : storyboard.commands()) {
+        for (Command command : storyboard.commands()) {
             if (allIds.contains(command.id())) {
                 return ValidationResult.failure(
                     "Duplicate command ID: " + command.id()
@@ -24,22 +28,22 @@ public class StoryboardValidator {
             }
         }
 
-        for (StoryboardCommand command : storyboard.commands()) {
-            if (command instanceof ConnectEntitiesCommand connectCmd) {
-                String from = connectCmd.params().from();
-                String to = connectCmd.params().to();
+        for (Command command : storyboard.commands()) {
+            if (command instanceof ConnectEntitiesCommand(String id, ConnectEntitiesParams params)) {
+                String from = params.from();
+                String to = params.to();
 
                 if (!entityIds.contains(from)) {
                     return ValidationResult.failure(
                         "ConnectEntitiesCommand '%s' references non-existent entity: from='%s'"
-                            .formatted(connectCmd.id(), from)
+                            .formatted(id, from)
                     );
                 }
 
                 if (!entityIds.contains(to)) {
                     return ValidationResult.failure(
                         "ConnectEntitiesCommand '%s' references non-existent entity: to='%s'"
-                            .formatted(connectCmd.id(), to)
+                            .formatted(id, to)
                     );
                 }
             }

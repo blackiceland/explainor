@@ -7,7 +7,7 @@
   "nodes" : [ {
     "id" : "client",
     "label" : "Client",
-    "icon" : "computer",
+    "icon" : "laptop",
     "x" : -125.0,
     "y" : 0.0
   }, {

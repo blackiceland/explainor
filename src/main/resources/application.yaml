@@ -1,2 +1,0 @@
-renderer:
-  url: ${RENDERER_URL:http://localhost:3030}

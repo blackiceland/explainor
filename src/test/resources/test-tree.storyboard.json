@@ -1,0 +1,12 @@
+{
+  "version": "1.0.0",
+  "commands": [
+    { "type": "create_entity", "id": "A", "params": { "label": "A", "icon": "user" } },
+    { "type": "create_entity", "id": "B", "params": { "label": "B", "icon": "server" } },
+    { "type": "create_entity", "id": "C", "params": { "label": "C", "icon": "server" } },
+    { "type": "connect_entities", "id": "AB", "params": { "from": "A", "to": "B", "label": "ab" } },
+    { "type": "connect_entities", "id": "AC", "params": { "from": "A", "to": "C", "label": "ac" } }
+  ]
+}
+
+

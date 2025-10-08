@@ -2,6 +2,7 @@ package com.dev.explainor.genesis.service;
 
 import com.dev.explainor.genesis.dto.*;
 import com.dev.explainor.genesis.layout.DummyLayoutManager;
+import com.dev.explainor.genesis.validation.StoryboardValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +16,8 @@ class GenesisConductorServiceTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final GenesisConductorService service = new GenesisConductorService(
-        new DummyLayoutManager()
+        new DummyLayoutManager(),
+        new StoryboardValidator()
     );
 
     @Test

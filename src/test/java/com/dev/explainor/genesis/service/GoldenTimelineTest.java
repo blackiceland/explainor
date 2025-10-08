@@ -3,6 +3,7 @@ package com.dev.explainor.genesis.service;
 import com.dev.explainor.genesis.dto.FinalTimelineV1;
 import com.dev.explainor.genesis.dto.StoryboardV1;
 import com.dev.explainor.genesis.layout.DummyLayoutManager;
+import com.dev.explainor.genesis.validation.StoryboardValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,8 @@ class GoldenTimelineTest {
         .enable(SerializationFeature.INDENT_OUTPUT);
     
     private final GenesisConductorService service = new GenesisConductorService(
-        new DummyLayoutManager()
+        new DummyLayoutManager(),
+        new StoryboardValidator()
     );
 
     @Test

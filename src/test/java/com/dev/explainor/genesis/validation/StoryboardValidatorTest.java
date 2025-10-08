@@ -1,5 +1,9 @@
 package com.dev.explainor.genesis.validation;
 
+import com.dev.explainor.genesis.domain.ConnectEntitiesCommand;
+import com.dev.explainor.genesis.domain.ConnectEntitiesParams;
+import com.dev.explainor.genesis.domain.CreateEntityCommand;
+import com.dev.explainor.genesis.domain.CreateEntityParams;
 import com.dev.explainor.genesis.dto.*;
 import org.junit.jupiter.api.Test;
 
@@ -16,8 +20,8 @@ class StoryboardValidatorTest {
         StoryboardV1 storyboard = new StoryboardV1(
             "1.0.0",
             List.of(
-                new CreateEntityCommand("client", new CreateEntityParams("Client", "computer", "left")),
-                new CreateEntityCommand("server", new CreateEntityParams("Server", "server", "right")),
+                new CreateEntityCommand("client", new CreateEntityParams("Client", "computer", null, "left")),
+                new CreateEntityCommand("server", new CreateEntityParams("Server", "server", null, "right")),
                 new ConnectEntitiesCommand("conn1", new ConnectEntitiesParams("client", "server", "HTTP"))
             )
         );
@@ -33,8 +37,8 @@ class StoryboardValidatorTest {
         StoryboardV1 storyboard = new StoryboardV1(
             "1.0.0",
             List.of(
-                new CreateEntityCommand("client", new CreateEntityParams("Client", "computer", "left")),
-                new CreateEntityCommand("client", new CreateEntityParams("Server", "server", "right"))
+                new CreateEntityCommand("client", new CreateEntityParams("Client", "computer", null, "left")),
+                new CreateEntityCommand("client", new CreateEntityParams("Server", "server", null, "right"))
             )
         );
 
@@ -49,7 +53,7 @@ class StoryboardValidatorTest {
         StoryboardV1 storyboard = new StoryboardV1(
             "1.0.0",
             List.of(
-                new CreateEntityCommand("server", new CreateEntityParams("Server", "server", "right")),
+                new CreateEntityCommand("server", new CreateEntityParams("Server", "server", null, "right")),
                 new ConnectEntitiesCommand("conn1", new ConnectEntitiesParams("client", "server", "HTTP"))
             )
         );
@@ -65,7 +69,7 @@ class StoryboardValidatorTest {
         StoryboardV1 storyboard = new StoryboardV1(
             "1.0.0",
             List.of(
-                new CreateEntityCommand("client", new CreateEntityParams("Client", "computer", "left")),
+                new CreateEntityCommand("client", new CreateEntityParams("Client", "computer", null, "left")),
                 new ConnectEntitiesCommand("conn1", new ConnectEntitiesParams("client", "server", "HTTP"))
             )
         );
@@ -81,8 +85,8 @@ class StoryboardValidatorTest {
         StoryboardV1 storyboard = new StoryboardV1(
             "1.0.0",
             List.of(
-                new CreateEntityCommand("client", new CreateEntityParams("Client", "computer", "left")),
-                new CreateEntityCommand("server", new CreateEntityParams("Server", "server", "right")),
+                new CreateEntityCommand("client", new CreateEntityParams("Client", "computer", null, "left")),
+                new CreateEntityCommand("server", new CreateEntityParams("Server", "server", null, "right")),
                 new ConnectEntitiesCommand("conn1", new ConnectEntitiesParams("client", "server", "HTTP")),
                 new ConnectEntitiesCommand("conn2", new ConnectEntitiesParams("client", "server", "WebSocket"))
             )

@@ -1,13 +1,12 @@
 package com.dev.explainor.genesis.layout;
 
-import com.dev.explainor.genesis.dto.Point;
 import com.dev.explainor.genesis.layout.model.*;
-import org.springframework.stereotype.Component;
+import com.dev.explainor.genesis.domain.Point;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-@Component
 public class DummyLayoutManager implements LayoutManager {
 
     private static final double NODE_SPACING = 250.0;
@@ -50,27 +49,23 @@ public class DummyLayoutManager implements LayoutManager {
     }
 
     private List<RoutedEdge> routeEdgesStraight(
-        List<LayoutEdge> edges, 
+        List<LayoutEdge> edges,
         List<PositionedNode> nodes
     ) {
+        java.util.Map<String, PositionedNode> positionedNodeMap = nodes.stream()
+            .collect(Collectors.toMap(PositionedNode::id, node -> node));
+
         List<RoutedEdge> result = new ArrayList<>();
-        
         for (LayoutEdge edge : edges) {
-            PositionedNode from = findNode(nodes, edge.from());
-            PositionedNode to = findNode(nodes, edge.to());
-            
-            if (from == null || to == null) {
-                throw new IllegalStateException(
-                    "Edge '%s' references non-existent node(s): from='%s' (exists=%s), to='%s' (exists=%s)"
-                        .formatted(edge.id(), edge.from(), from != null, edge.to(), to != null)
-                );
-            }
-            
+            PositionedNode from = positionedNodeMap.get(edge.from());
+            PositionedNode to = positionedNodeMap.get(edge.to());
+            validateEdgeNodes(edge, from, to);
+
             List<Point> path = List.of(
                 new Point(from.x(), from.y()),
                 new Point(to.x(), to.y())
             );
-            
+
             result.add(new RoutedEdge(
                 edge.id(),
                 edge.from(),
@@ -79,15 +74,16 @@ public class DummyLayoutManager implements LayoutManager {
                 path
             ));
         }
-        
         return result;
     }
 
-    private PositionedNode findNode(List<PositionedNode> nodes, String id) {
-        return nodes.stream()
-            .filter(n -> n.id().equals(id))
-            .findFirst()
-            .orElse(null);
+    private void validateEdgeNodes(LayoutEdge edge, PositionedNode from, PositionedNode to) {
+        if (from == null || to == null) {
+            throw new IllegalStateException(
+                "Edge '%s' references non-existent node(s): from='%s' (exists=%s), to='%s' (exists=%s)"
+                    .formatted(edge.id(), edge.from(), from != null, edge.to(), to != null)
+            );
+        }
     }
 }
 
