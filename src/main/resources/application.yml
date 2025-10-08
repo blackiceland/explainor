@@ -15,6 +15,3 @@ layout:
     layer-spacing: 160.0
     node-spacing: 220.0
     grid-step: 40.0
-
-legacy:
-  enabled: false

@@ -7,7 +7,10 @@ import com.dev.explainor.genesis.domain.ConnectEntitiesCommand;
 import com.dev.explainor.genesis.domain.ConnectEntitiesParams;
 import com.dev.explainor.genesis.domain.PauseCommand;
 import com.dev.explainor.genesis.domain.PauseParams;
+import com.dev.explainor.genesis.domain.Point;
 import com.dev.explainor.genesis.service.GenesisConductorService;
+import com.dev.explainor.genesis.config.JacksonConfig;
+import com.dev.explainor.genesis.config.GlobalExceptionHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,7 +47,7 @@ class GenesisControllerTest {
 
         FinalTimelineV1 expectedTimeline = FinalTimelineV1.create(
             new Stage(1280, 720),
-            List.of(new TimelineNode("entity1", "Label", "icon", 0.0, 0.0)),
+            List.of(new TimelineNode("entity1", "Label", "icon", 0.0, 0.0, VisualStyle.defaultNodeStyle())),
             List.of()
         );
 
@@ -135,11 +138,11 @@ class GenesisControllerTest {
         FinalTimelineV1 expectedTimeline = FinalTimelineV1.create(
             new Stage(1280, 720),
             List.of(
-                new TimelineNode("client", "Client", "computer", -100.0, 0.0),
-                new TimelineNode("server", "Server", "server", 100.0, 0.0)
+                new TimelineNode("client", "Client", "computer", -100.0, 0.0, VisualStyle.defaultNodeStyle()),
+                new TimelineNode("server", "Server", "server", 100.0, 0.0, VisualStyle.defaultNodeStyle())
             ),
             List.of(
-                new TimelineEdge("conn1", "client", "server", "HTTP", List.of())
+                new TimelineEdge("conn1", "client", "server", "HTTP", List.of(new Point(0,0), new Point(100,0)), EdgeStyle.defaultEdgeStyle())
             )
         );
 

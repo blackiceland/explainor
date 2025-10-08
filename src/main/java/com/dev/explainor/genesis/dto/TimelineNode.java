@@ -5,6 +5,7 @@ public record TimelineNode(
     String label,
     String icon,
     double x,
-    double y
+    double y,
+    VisualStyle visualStyle
 ) {}
 

@@ -4,7 +4,9 @@ import com.dev.explainor.genesis.config.LayoutProperties;
 import com.dev.explainor.genesis.layout.model.*;
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.graph.SimpleGraph;
+import org.jgrapht.graph.DefaultDirectedGraph;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -15,6 +17,8 @@ import java.util.Map;
 import java.util.Set;
 
 public class GraphBasedLayoutManager implements LayoutManager {
+
+    private static final Logger log = LoggerFactory.getLogger(GraphBasedLayoutManager.class);
 
     private final double layerSpacing;
     private final double nodeSpacing;
@@ -34,14 +38,24 @@ public class GraphBasedLayoutManager implements LayoutManager {
         Map<String, Integer> levels = assignLevels(graph);
         Map<String, Integer> orders = assignOrdersPerLevel(nodes, levels);
 
+        log.info("Assigned levels: {}", levels);
+        log.info("Assigned orders: {}", orders);
+
         List<PositionedNode> positionedNodes = calculatePositions(nodes, levels, orders);
+        
+        log.info("Calculated positions before centering:");
+        positionedNodes.forEach(n -> log.info("  {} -> x={}, y={}", n.id(), n.x(), n.y()));
+        
         centerAndScale(positionedNodes, constraints);
+
+        log.info("Final positions after centering:");
+        positionedNodes.forEach(n -> log.info("  {} -> x={}, y={}", n.id(), n.x(), n.y()));
 
         return positionedNodes;
     }
 
     private Graph<String, DefaultEdge> buildGraph(List<LayoutNode> nodes, List<LayoutEdge> edges) {
-        Graph<String, DefaultEdge> graph = new SimpleGraph<>(DefaultEdge.class);
+        Graph<String, DefaultEdge> graph = new DefaultDirectedGraph<>(DefaultEdge.class);
         for (LayoutNode node : nodes) {
             graph.addVertex(node.id());
         }
@@ -75,8 +89,8 @@ public class GraphBasedLayoutManager implements LayoutManager {
         while (!queue.isEmpty()) {
             String current = queue.poll();
             int nextLevel = levels.get(current) + 1;
-            for (DefaultEdge edge : graph.edgesOf(current)) {
-                String neighbor = getOppositeVertex(graph, edge, current);
+            for (DefaultEdge edge : graph.outgoingEdgesOf(current)) {
+                String neighbor = graph.getEdgeTarget(edge);
                 if (!visited.contains(neighbor)) {
                     visited.add(neighbor);
                     levels.put(neighbor, nextLevel);
@@ -85,10 +99,6 @@ public class GraphBasedLayoutManager implements LayoutManager {
             }
         }
         return levels;
-    }
-
-    private String getOppositeVertex(Graph<String, DefaultEdge> graph, DefaultEdge edge, String vertex) {
-        return graph.getEdgeSource(edge).equals(vertex) ? graph.getEdgeTarget(edge) : graph.getEdgeSource(edge);
     }
 
     private Map<String, Integer> assignOrdersPerLevel(List<LayoutNode> nodes, Map<String, Integer> levels) {
@@ -110,7 +120,7 @@ public class GraphBasedLayoutManager implements LayoutManager {
     ) {
         List<PositionedNode> positions = new ArrayList<>();
         Map<Integer, Integer> levelCounts = new HashMap<>();
-        for (Integer level : orders.values()) {
+        for (Integer level : levels.values()) {
             levelCounts.merge(level, 1, Integer::sum);
         }
 
@@ -136,15 +146,19 @@ public class GraphBasedLayoutManager implements LayoutManager {
         double contentWidth = bounds.maxX() - bounds.minX();
         double contentHeight = bounds.maxY() - bounds.minY();
 
-        double offsetX = -bounds.minX() - contentWidth / 2.0;
-        double offsetY = -bounds.minY() - contentHeight / 2.0;
+        double baseOffsetX = -bounds.minX() - contentWidth / 2.0;
+        double baseOffsetY = -bounds.minY() - contentHeight / 2.0;
+
+        // Add final translation to the canvas center
+        final double finalOffsetX = baseOffsetX + constraints.canvasWidth() / 2.0;
+        final double finalOffsetY = baseOffsetY + constraints.canvasHeight() / 2.0;
 
         nodes.replaceAll(node -> new PositionedNode(
             node.id(),
             node.label(),
             node.icon(),
-            node.x() + offsetX,
-            node.y() + offsetY
+            node.x() + finalOffsetX,
+            node.y() + finalOffsetY
         ));
     }
 

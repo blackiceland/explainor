@@ -1,9 +1,11 @@
 package com.dev.explainor.genesis.service;
 
+import com.dev.explainor.genesis.dto.EdgeStyle;
 import com.dev.explainor.genesis.dto.FinalTimelineV1;
 import com.dev.explainor.genesis.dto.Stage;
 import com.dev.explainor.genesis.dto.TimelineEdge;
 import com.dev.explainor.genesis.dto.TimelineNode;
+import com.dev.explainor.genesis.dto.VisualStyle;
 import com.dev.explainor.genesis.layout.model.LayoutResult;
 import com.dev.explainor.genesis.layout.model.PositionedNode;
 import com.dev.explainor.genesis.layout.model.RoutedEdge;
@@ -36,7 +38,8 @@ public class TimelineFactory {
                 positionedNode.label(),
                 positionedNode.icon(),
                 positionedNode.x(),
-                positionedNode.y()
+                positionedNode.y(),
+                VisualStyle.defaultNodeStyle()
             ))
             .toList();
     }
@@ -48,7 +51,8 @@ public class TimelineFactory {
                 routedEdge.from(),
                 routedEdge.to(),
                 routedEdge.label(),
-                routedEdge.path()
+                routedEdge.path(),
+                EdgeStyle.defaultEdgeStyle()
             ))
             .toList();
     }
