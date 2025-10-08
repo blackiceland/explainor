@@ -232,13 +232,18 @@
 
             const icon = document.createElement('div');
             icon.className = 'node-icon';
-            if (node.icon === 'computer-desktop') {
-                icon.textContent = '💻';
-            } else if (node.icon === 'server') {
-                icon.textContent = '🖥️';
-            } else {
-                icon.textContent = '❓';
-            }
+            const iconMap = {
+                'computer-desktop': '💻',
+                'computer': '💻',
+                'laptop': '💻',
+                'server': '🖥️',
+                'database': '🗄️',
+                'cloud': '☁️',
+                'mobile': '📱',
+                'api': '🔌',
+                'user': '👤'
+            };
+            icon.textContent = iconMap[node.icon] || '❓';
             nodeEl.appendChild(icon);
 
             const label = document.createElement('div');

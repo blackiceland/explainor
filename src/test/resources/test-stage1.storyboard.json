@@ -6,8 +6,7 @@
       "id": "client",
       "params": {
         "label": "Client",
-        "icon": "computer",
-        "positionHint": "left"
+        "icon": "laptop"
       }
     },
     {
@@ -15,8 +14,7 @@
       "id": "server",
       "params": {
         "label": "Server",
-        "icon": "server",
-        "positionHint": "right"
+        "icon": "server"
       }
     },
     {
@@ -30,4 +28,3 @@
     }
   ]
 }
-
