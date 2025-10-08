@@ -16,20 +16,18 @@ import java.util.Set;
 
 public class GraphBasedLayoutManager implements LayoutManager {
 
-    private final PathFinder pathFinder;
     private final double layerSpacing;
     private final double nodeSpacing;
 
-    public GraphBasedLayoutManager(PathFinder pathFinder, LayoutProperties properties) {
-        this.pathFinder = pathFinder;
+    public GraphBasedLayoutManager(LayoutProperties properties) {
         this.layerSpacing = properties.getLayerSpacing();
         this.nodeSpacing = properties.getNodeSpacing();
     }
 
     @Override
-    public LayoutResult layout(List<LayoutNode> nodes, List<LayoutEdge> edges, LayoutConstraints constraints) {
+    public List<PositionedNode> layout(List<LayoutNode> nodes, List<LayoutEdge> edges, LayoutConstraints constraints) {
         if (nodes.isEmpty()) {
-            return new LayoutResult(List.of(), List.of());
+            return List.of();
         }
 
         Graph<String, DefaultEdge> graph = buildGraph(nodes, edges);
@@ -39,8 +37,7 @@ public class GraphBasedLayoutManager implements LayoutManager {
         List<PositionedNode> positionedNodes = calculatePositions(nodes, levels, orders);
         centerAndScale(positionedNodes, constraints);
 
-        List<RoutedEdge> routedEdges = pathFinder.routeEdges(edges, positionedNodes, constraints);
-        return new LayoutResult(positionedNodes, routedEdges);
+        return positionedNodes;
     }
 
     private Graph<String, DefaultEdge> buildGraph(List<LayoutNode> nodes, List<LayoutEdge> edges) {

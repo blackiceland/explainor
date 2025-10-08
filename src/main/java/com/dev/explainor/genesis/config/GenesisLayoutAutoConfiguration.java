@@ -6,6 +6,7 @@ import com.dev.explainor.genesis.layout.LayoutManager;
 import com.dev.explainor.genesis.layout.PathFinder;
 import com.dev.explainor.genesis.layout.OrthogonalPathFinder;
 import com.dev.explainor.genesis.validation.StoryboardValidator;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -21,18 +22,17 @@ public class GenesisLayoutAutoConfiguration {
         return new StoryboardValidator();
     }
 
-    @Configuration
-    @ConditionalOnProperty(prefix = "layout", name = "algorithm", havingValue = "graph")
-    static class GraphLayoutConfiguration {
-        @Bean(name = "genesisPathFinder")
-        PathFinder pathFinder(LayoutProperties props) {
-            return new OrthogonalPathFinder(props);
-        }
+    @Bean
+    @ConditionalOnMissingBean(PathFinder.class)
+    public PathFinder orthogonalPathFinder(LayoutProperties properties) {
+        return new OrthogonalPathFinder(properties);
+    }
 
-        @Bean(name = "genesisLayoutManager")
-        LayoutManager layoutManager(PathFinder pathFinder, LayoutProperties props) {
-            return new GraphBasedLayoutManager(pathFinder, props);
-        }
+    @Bean
+    @ConditionalOnProperty(name = "layout.graph.manager", havingValue = "graph", matchIfMissing = true)
+    @Qualifier("genesisLayoutManager")
+    public LayoutManager graphBasedLayoutManager(LayoutProperties properties) {
+        return new GraphBasedLayoutManager(properties);
     }
 
     @Configuration

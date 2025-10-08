@@ -3,6 +3,8 @@ package com.dev.explainor.genesis.service;
 import com.dev.explainor.genesis.dto.FinalTimelineV1;
 import com.dev.explainor.genesis.dto.StoryboardV1;
 import com.dev.explainor.genesis.layout.DummyLayoutManager;
+import com.dev.explainor.genesis.layout.OrthogonalPathFinder;
+import com.dev.explainor.genesis.config.LayoutProperties;
 import com.dev.explainor.genesis.validation.StoryboardValidator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -21,7 +23,10 @@ class GoldenTimelineTest {
     
     private final GenesisConductorService service = new GenesisConductorService(
         new DummyLayoutManager(),
-        new StoryboardValidator()
+        new OrthogonalPathFinder(new LayoutProperties()),
+        new StoryboardValidator(),
+        new LayoutModelFactory(),
+        new TimelineFactory()
     );
 
     @Test

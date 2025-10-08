@@ -19,8 +19,11 @@ class GenesisConductorServiceGraphTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
     private final GenesisConductorService service = new GenesisConductorService(
-        new GraphBasedLayoutManager(new OrthogonalPathFinder(new LayoutProperties()), new LayoutProperties()),
-        new StoryboardValidator()
+        new GraphBasedLayoutManager(new LayoutProperties()),
+        new OrthogonalPathFinder(new LayoutProperties()),
+        new StoryboardValidator(),
+        new LayoutModelFactory(),
+        new TimelineFactory()
     );
 
     @Test

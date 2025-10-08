@@ -6,5 +6,5 @@ import java.util.List;
 
 public interface LayoutManager {
     
-    LayoutResult layout(List<LayoutNode> nodes, List<LayoutEdge> edges, LayoutConstraints constraints);
+    List<PositionedNode> layout(List<LayoutNode> nodes, List<LayoutEdge> edges, LayoutConstraints constraints);
 }

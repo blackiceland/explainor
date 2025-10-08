@@ -1,20 +1,16 @@
 package com.dev.explainor.genesis.service;
 
-import com.dev.explainor.genesis.domain.FocusOnCommand;
-import com.dev.explainor.genesis.dto.*;
-import com.dev.explainor.genesis.domain.Command;
-import com.dev.explainor.genesis.domain.CreateEntityCommand;
-import com.dev.explainor.genesis.domain.ConnectEntitiesCommand;
-import com.dev.explainor.genesis.domain.PauseCommand;
-import org.springframework.beans.factory.annotation.Qualifier;
+import com.dev.explainor.genesis.dto.FinalTimelineV1;
+import com.dev.explainor.genesis.dto.StoryboardV1;
 import com.dev.explainor.genesis.layout.LayoutManager;
+import com.dev.explainor.genesis.layout.PathFinder;
 import com.dev.explainor.genesis.layout.model.*;
 import com.dev.explainor.genesis.validation.StoryboardValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -22,17 +18,24 @@ import java.util.Objects;
 public class GenesisConductorService {
 
     private static final Logger log = LoggerFactory.getLogger(GenesisConductorService.class);
-    private static final int DEFAULT_CANVAS_WIDTH = 1280;
-    private static final int DEFAULT_CANVAS_HEIGHT = 720;
 
     private final LayoutManager layoutManager;
+    private final PathFinder pathFinder;
     private final StoryboardValidator validator;
+    private final LayoutModelFactory layoutModelFactory;
+    private final TimelineFactory timelineFactory;
 
     public GenesisConductorService(
             @Qualifier("genesisLayoutManager") LayoutManager layoutManager,
-            StoryboardValidator validator) {
+            PathFinder pathFinder,
+            StoryboardValidator validator,
+            LayoutModelFactory layoutModelFactory,
+            TimelineFactory timelineFactory) {
         this.layoutManager = layoutManager;
+        this.pathFinder = pathFinder;
         this.validator = validator;
+        this.layoutModelFactory = layoutModelFactory;
+        this.timelineFactory = timelineFactory;
     }
 
     public FinalTimelineV1 choreograph(StoryboardV1 storyboard) {
@@ -40,35 +43,27 @@ public class GenesisConductorService {
         validateStoryboardVersion(storyboard);
         validateStoryboardIntegrity(storyboard);
 
-        log.info("Processing storyboard v{} with {} commands", 
+        log.info("Processing storyboard v{} with {} commands",
             storyboard.version(), storyboard.commands().size());
 
-        ExtractionResult extractionResult = extractNodesAndEdges(storyboard);
+        LayoutModelFactory.ExtractionResult extractionResult = layoutModelFactory.createFrom(storyboard);
         List<LayoutNode> layoutNodes = extractionResult.nodes();
         List<LayoutEdge> layoutEdges = extractionResult.edges();
 
-        LayoutConstraints constraints = LayoutConstraints.create(
-            DEFAULT_CANVAS_WIDTH, 
-            DEFAULT_CANVAS_HEIGHT
-        );
+        LayoutConstraints constraints = LayoutConstraints.create(1280, 720);
 
-        LayoutResult layoutResult = layoutManager.layout(
-            layoutNodes, 
-            layoutEdges, 
+        List<PositionedNode> positionedNodes = layoutManager.layout(
+            layoutNodes,
+            layoutEdges,
             constraints
         );
 
-        Stage stage = new Stage(
-            DEFAULT_CANVAS_WIDTH,
-            DEFAULT_CANVAS_HEIGHT
-        );
+        List<RoutedEdge> routedEdges = pathFinder.routeEdges(layoutEdges, positionedNodes, constraints);
+        LayoutResult layoutResult = new LayoutResult(positionedNodes, routedEdges);
 
-        List<TimelineNode> nodes = convertToNodes(layoutResult.nodes());
-        List<TimelineEdge> edges = convertToEdges(layoutResult.edges());
-
-        log.info("Generated timeline with {} nodes and {} edges", nodes.size(), edges.size());
-
-        return FinalTimelineV1.create(stage, nodes, edges);
+        log.info("Generated timeline with {} nodes and {} edges", layoutResult.nodes().size(), layoutResult.edges().size());
+        
+        return timelineFactory.createFrom(layoutResult);
     }
 
     private void validateStoryboardVersion(StoryboardV1 storyboard) {
@@ -88,63 +83,6 @@ public class GenesisConductorService {
                 "Invalid storyboard: " + result.errorMessage()
             );
         }
-    }
-
-    private ExtractionResult extractNodesAndEdges(StoryboardV1 storyboard) {
-        List<LayoutNode> nodes = new ArrayList<>();
-        List<LayoutEdge> edges = new ArrayList<>();
-        
-        for (Command command : storyboard.commands()) {
-            switch (command) {
-                case CreateEntityCommand createCmd -> nodes.add(new LayoutNode(
-                    createCmd.id(),
-                    createCmd.params().label(),
-                    createCmd.params().icon(),
-                    createCmd.params().positionHint()
-                ));
-                case ConnectEntitiesCommand connectCmd -> edges.add(new LayoutEdge(
-                    connectCmd.id(),
-                    connectCmd.params().from(),
-                    connectCmd.params().to(),
-                    connectCmd.params().label()
-                ));
-                case PauseCommand pauseCmd -> {
-                }
-                case FocusOnCommand focusCmd -> {
-                }
-            }
-        }
-        
-        return new ExtractionResult(nodes, edges);
-    }
-
-    private record ExtractionResult(
-        List<LayoutNode> nodes,
-        List<LayoutEdge> edges
-    ) {}
-
-    private List<TimelineNode> convertToNodes(List<PositionedNode> positionedNodes) {
-        return positionedNodes.stream()
-            .map(positionedNode -> new TimelineNode(
-                positionedNode.id(),
-                positionedNode.label(),
-                positionedNode.icon(),
-                positionedNode.x(),
-                positionedNode.y()
-            ))
-            .toList();
-    }
-
-    private List<TimelineEdge> convertToEdges(List<RoutedEdge> routedEdges) {
-        return routedEdges.stream()
-            .map(routedEdge -> new TimelineEdge(
-                routedEdge.id(),
-                routedEdge.from(),
-                routedEdge.to(),
-                routedEdge.label(),
-                routedEdge.path()
-            ))
-            .toList();
     }
 }
 
