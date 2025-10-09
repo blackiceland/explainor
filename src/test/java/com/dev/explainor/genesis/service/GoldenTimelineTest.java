@@ -26,7 +26,8 @@ class GoldenTimelineTest {
         new OrthogonalPathFinder(new LayoutProperties()),
         new StoryboardValidator(),
         new LayoutModelFactory(),
-        new TimelineFactory()
+        new TimelineFactory(),
+        new TimelineEnricher(new com.dev.explainor.genesis.timing.DefaultTimingProvider())
     );
 
     @Test

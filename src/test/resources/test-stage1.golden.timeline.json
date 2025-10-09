@@ -1,5 +1,5 @@
 {
-  "version" : "1.0.0",
+  "version" : "1.1.0",
   "stage" : {
     "width" : 1280,
     "height" : 720
@@ -104,5 +104,56 @@
         }
       }
     }
+  } ],
+  "tracks" : [ {
+    "id" : "track-node-client",
+    "type" : "node",
+    "targetId" : "client",
+    "segments" : [ {
+      "t0" : 0.0,
+      "t1" : 1.0,
+      "property" : "opacity",
+      "from" : 0.0,
+      "to" : 1.0,
+      "easing" : "easeInOutQuint"
+    }, {
+      "t0" : 0.0,
+      "t1" : 1.0,
+      "property" : "scale",
+      "from" : 0.0,
+      "to" : 1.0,
+      "easing" : "easeInOutQuint"
+    } ]
+  }, {
+    "id" : "track-node-server",
+    "type" : "node",
+    "targetId" : "server",
+    "segments" : [ {
+      "t0" : 1.1,
+      "t1" : 2.1,
+      "property" : "opacity",
+      "from" : 0.0,
+      "to" : 1.0,
+      "easing" : "easeInOutQuint"
+    }, {
+      "t0" : 1.1,
+      "t1" : 2.1,
+      "property" : "scale",
+      "from" : 0.0,
+      "to" : 1.0,
+      "easing" : "easeInOutQuint"
+    } ]
+  }, {
+    "id" : "track-edge-client-server",
+    "type" : "edge",
+    "targetId" : "client-server",
+    "segments" : [ {
+      "t0" : 2.2,
+      "t1" : 3.7,
+      "property" : "opacity",
+      "from" : 0.0,
+      "to" : 1.0,
+      "easing" : "easeInOutCubic"
+    } ]
   } ]
 }

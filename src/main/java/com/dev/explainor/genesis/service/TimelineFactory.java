@@ -1,5 +1,6 @@
 package com.dev.explainor.genesis.service;
 
+import com.dev.explainor.genesis.dto.AnimationTrack;
 import com.dev.explainor.genesis.dto.EdgeStyle;
 import com.dev.explainor.genesis.dto.FinalTimelineV1;
 import com.dev.explainor.genesis.dto.Stage;
@@ -20,6 +21,10 @@ public class TimelineFactory {
     private static final int DEFAULT_CANVAS_HEIGHT = 720;
 
     public FinalTimelineV1 createFrom(LayoutResult layoutResult) {
+        return createFrom(layoutResult, List.of());
+    }
+
+    public FinalTimelineV1 createFrom(LayoutResult layoutResult, List<AnimationTrack> animationTracks) {
         Stage stage = new Stage(
             DEFAULT_CANVAS_WIDTH,
             DEFAULT_CANVAS_HEIGHT
@@ -28,7 +33,7 @@ public class TimelineFactory {
         List<TimelineNode> nodes = convertToNodes(layoutResult.nodes());
         List<TimelineEdge> edges = convertToEdges(layoutResult.edges());
 
-        return FinalTimelineV1.create(stage, nodes, edges);
+        return FinalTimelineV1.create(stage, nodes, edges, animationTracks);
     }
 
     private List<TimelineNode> convertToNodes(List<PositionedNode> positionedNodes) {

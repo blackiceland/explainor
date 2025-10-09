@@ -1,71 +1,139 @@
-import { Composition, registerRoot } from "remotion";
-import { Main, mainSchema } from './remotion/Main';
-import { z } from "zod";
-import React from "react";
+import { registerRoot } from 'remotion';
+import { Composition } from './remotion/Composition';
 
-const timelineEventSchema = z.object({
-    elementId: z.string(),
-    type: z.enum(["icon", "text", "arrow", "animated-icon", "shape", "group"]),
-    asset: z.string().optional(),
-    content: z.string().optional(),
-    action: z.enum(["appear", "animate", "disappear"]),
-    time: z.number(),
-    duration: z.number().optional(),
-    from: z.object({ x: z.number(), y: z.number() }).optional(),
-    to: z.object({ x: z.number(), y: z.number() }).optional(),
-    children: z.array(z.string()).optional(),
-    props: z.any().optional(),
-});
-
-const compositionSchema = z.object({
-    timeline: mainSchema.shape.timeline,
-    canvas: mainSchema.shape.canvas,
-    totalDuration: mainSchema.shape.totalDuration,
-    camera: z.array(z.object({
-        type: z.enum(['pan', 'zoom']),
-        time: z.number(),
-        duration: z.number(),
-        to: z.object({
-            x: z.number().optional(),
-            y: z.number().optional(),
-            scale: z.number().optional(),
-        }),
-    })).optional(),
-});
-
-export const RemotionRoot: React.FC = () => {
-    return (
-        <>
-            <Composition
-                id="Main"
-                component={Main}
-                durationInFrames={195}
-                fps={30}
-                width={1280}
-                height={720}
-                schema={compositionSchema}
-                defaultProps={{
-                    totalDuration: 10,
-                    canvas: {
-                        width: 1280,
-                        height: 720,
-                        backgroundColor: 'white',
-                    },
-                    timeline: [],
-                    camera: [],
-                }}
-                calculateMetadata={({ props }) => {
-                    return {
-                        durationInFrames: Math.ceil(props.totalDuration * 30),
-                        fps: 30,
-                        width: props.canvas.width,
-                        height: props.canvas.height,
-                    };
-                }}
-            />
-        </>
-    );
+const sampleTimeline = {
+  version: '1.1.0',
+  stage: {
+    width: 1280,
+    height: 720,
+  },
+  nodes: [
+    {
+      id: 'client',
+      label: 'Client',
+      icon: '💻',
+      x: 400,
+      y: 360,
+      visualStyle: {
+        width: 120,
+        height: 80,
+        shape: 'rectangle',
+        backgroundColor: '#1e293b',
+        borderColor: '#3b82f6',
+        borderWidth: 2,
+        borderRadius: 8,
+      },
+    },
+    {
+      id: 'server',
+      label: 'Server',
+      icon: '🖥️',
+      x: 880,
+      y: 360,
+      visualStyle: {
+        width: 120,
+        height: 80,
+        shape: 'rectangle',
+        backgroundColor: '#1e293b',
+        borderColor: '#10b981',
+        borderWidth: 2,
+        borderRadius: 8,
+      },
+    },
+  ],
+  edges: [
+    {
+      id: 'edge-1',
+      from: 'client',
+      to: 'server',
+      label: 'request',
+      path: [
+        { x: 460, y: 360 },
+        { x: 820, y: 360 },
+      ],
+      edgeStyle: {
+        strokeColor: '#64748b',
+        strokeWidth: 2,
+        arrowStyle: 'default',
+      },
+    },
+  ],
+  tracks: [
+    {
+      id: 'track-node-client',
+      type: 'node',
+      targetId: 'client',
+      segments: [
+        {
+          t0: 0,
+          t1: 1,
+          property: 'opacity',
+          from: 0,
+          to: 1,
+          easing: 'easeInOutQuint',
+        },
+        {
+          t0: 0,
+          t1: 1,
+          property: 'scale',
+          from: 0,
+          to: 1,
+          easing: 'easeInOutQuint',
+        },
+      ],
+    },
+    {
+      id: 'track-node-server',
+      type: 'node',
+      targetId: 'server',
+      segments: [
+        {
+          t0: 1.1,
+          t1: 2.1,
+          property: 'opacity',
+          from: 0,
+          to: 1,
+          easing: 'easeInOutQuint',
+        },
+        {
+          t0: 1.1,
+          t1: 2.1,
+          property: 'scale',
+          from: 0,
+          to: 1,
+          easing: 'easeInOutQuint',
+        },
+      ],
+    },
+    {
+      id: 'track-edge-client-server',
+      type: 'edge',
+      targetId: 'client-server',
+      segments: [
+        {
+          t0: 2.2,
+          t1: 3.7,
+          property: 'opacity',
+          from: 0,
+          to: 1,
+          easing: 'easeInOutCubic',
+        },
+      ],
+    },
+  ],
 };
 
-registerRoot(RemotionRoot);
-
+registerRoot(() => {
+  return (
+    <>
+      <Composition
+        id="Main"
+        component={() => <Composition timeline={sampleTimeline} />}
+        durationInFrames={150}
+        fps={30}
+        width={1280}
+        height={720}
+      />
+    </>
+  );
+});

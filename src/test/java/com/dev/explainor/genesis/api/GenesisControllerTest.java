@@ -58,7 +58,7 @@ class GenesisControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(storyboard)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.version").value("1.0.0"))
+            .andExpect(jsonPath("$.version").value("1.1.0"))
             .andExpect(jsonPath("$.stage.width").value(1280))
             .andExpect(jsonPath("$.stage.height").value(720))
             .andExpect(jsonPath("$.nodes").isArray())
@@ -166,7 +166,7 @@ class GenesisControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("ok"))
             .andExpect(jsonPath("$.storyboardVersion").value("1.0.0"))
-            .andExpect(jsonPath("$.timelineVersion").value("1.0.0"));
+            .andExpect(jsonPath("$.timelineVersion").value("1.1.0"));
     }
 
     @Test

@@ -1,5 +1,6 @@
 package com.dev.explainor.genesis.service;
 
+import com.dev.explainor.genesis.dto.AnimationTrack;
 import com.dev.explainor.genesis.dto.FinalTimelineV1;
 import com.dev.explainor.genesis.dto.StoryboardV1;
 import com.dev.explainor.genesis.layout.LayoutManager;
@@ -24,18 +25,21 @@ public class GenesisConductorService {
     private final StoryboardValidator validator;
     private final LayoutModelFactory layoutModelFactory;
     private final TimelineFactory timelineFactory;
+    private final TimelineEnricher timelineEnricher;
 
     public GenesisConductorService(
             @Qualifier("genesisLayoutManager") LayoutManager layoutManager,
             PathFinder pathFinder,
             StoryboardValidator validator,
             LayoutModelFactory layoutModelFactory,
-            TimelineFactory timelineFactory) {
+            TimelineFactory timelineFactory,
+            TimelineEnricher timelineEnricher) {
         this.layoutManager = layoutManager;
         this.pathFinder = pathFinder;
         this.validator = validator;
         this.layoutModelFactory = layoutModelFactory;
         this.timelineFactory = timelineFactory;
+        this.timelineEnricher = timelineEnricher;
     }
 
     public FinalTimelineV1 choreograph(StoryboardV1 storyboard) {
@@ -61,9 +65,12 @@ public class GenesisConductorService {
         List<RoutedEdge> routedEdges = pathFinder.routeEdges(layoutEdges, positionedNodes, constraints);
         LayoutResult layoutResult = new LayoutResult(positionedNodes, routedEdges);
 
-        log.info("Generated timeline with {} nodes and {} edges", layoutResult.nodes().size(), layoutResult.edges().size());
+        List<AnimationTrack> animationTracks = timelineEnricher.enrichWithAnimations(storyboard);
+
+        log.info("Generated timeline with {} nodes, {} edges and {} animation tracks", 
+            layoutResult.nodes().size(), layoutResult.edges().size(), animationTracks.size());
         
-        return timelineFactory.createFrom(layoutResult);
+        return timelineFactory.createFrom(layoutResult, animationTracks);
     }
 
     private void validateStoryboardVersion(StoryboardV1 storyboard) {
