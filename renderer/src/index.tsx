@@ -1,5 +1,5 @@
-import { registerRoot } from 'remotion';
-import { Composition } from './remotion/Composition';
+import { Composition, registerRoot } from 'remotion';
+import { Composition as VideoComposition } from './remotion/Composition';
 
 const sampleTimeline = {
   version: '1.1.0',
@@ -128,11 +128,14 @@ registerRoot(() => {
     <>
       <Composition
         id="Main"
-        component={() => <Composition timeline={sampleTimeline} />}
+        component={VideoComposition}
         durationInFrames={150}
         fps={30}
         width={1280}
         height={720}
+        defaultProps={{
+          timeline: sampleTimeline,
+        }}
       />
     </>
   );

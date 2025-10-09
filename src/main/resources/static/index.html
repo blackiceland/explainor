@@ -2,63 +2,194 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Explainor - Stage 2 Test</title>
+    <title>Explainor - Stage 3: "First Breath"</title>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin: 20px;
+            padding: 20px;
         }
-        #container { display: flex; width: 90%; max-width: 1800px; gap: 20px; }
-        #controls { flex: 1; display: flex; flex-direction: column; }
-        #canvas-wrapper { flex: 2; }
-        textarea { width: 100%; height: 400px; font-family: monospace; font-size: 12px; }
-        button {
-            padding: 10px 20px;
+        h1 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 32px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        .subtitle {
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 30px;
             font-size: 16px;
+        }
+        #container {
+            display: flex;
+            width: 90%;
+            max-width: 1800px;
+            gap: 20px;
+        }
+        #controls {
+            flex: 1;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        #canvas-wrapper {
+            flex: 2;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        h3 {
+            margin-bottom: 15px;
+            color: #1f2937;
+            font-size: 18px;
+        }
+        textarea {
+            width: 100%;
+            height: 400px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px;
+            resize: vertical;
+        }
+        button {
+            width: 100%;
+            padding: 14px 20px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            background: #3B82F6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 6px;
-            font-weight: 600;
+            border-radius: 8px;
+            margin-top: 15px;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        button:hover { background: #2563EB; }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        #error-output {
+            color: #ef4444;
+            margin-top: 15px;
+            font-weight: 500;
+            padding: 12px;
+            background: #fee;
+            border-radius: 6px;
+            border-left: 4px solid #ef4444;
+        }
+        #info-output {
+            color: #10b981;
+            margin-top: 15px;
+            font-weight: 500;
+            padding: 12px;
+            background: #d1fae5;
+            border-radius: 6px;
+            border-left: 4px solid #10b981;
+        }
         #canvas {
             position: relative;
             width: 1280px;
             height: 720px;
-            background-color: #D1D5DB;
+            background: #0f172a;
             overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             transform-origin: top left;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
         .node {
             position: absolute;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
             transform: translate(-50%, -50%);
-            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+        .edge-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .controls-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+        }
+        .playback-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .playback-controls button {
+            flex: 1;
+            margin-top: 0;
+        }
+        #timeline-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f3f4f6;
+            border-radius: 6px;
+            font-size: 13px;
+            color: #4b5563;
         }
     </style>
 </head>
 <body>
 
-<h1>Explainor - Stage 2: "The Rock"</h1>
+<h1>🎬 Explainor - Stage 3: "First Breath"</h1>
+<p class="subtitle">Проверка анимационных треков и временной шкалы</p>
+
 <div id="container">
     <div id="controls">
-        <h3>1. Storyboard Input</h3>
+        <h3>📝 Storyboard Input</h3>
         <textarea id="storyboard-input"></textarea>
-        <br>
-        <button id="submit-btn">Choreograph</button>
-        <div id="error-output" style="color: #EF4444; margin-top: 10px; font-weight: 500;"></div>
+        
+        <button id="submit-btn">🎭 Choreograph & Animate</button>
+        
+        <div class="controls-section">
+            <h3>🎮 Playback Controls</h3>
+            <div class="playback-controls">
+                <button id="replay-btn" disabled>↻ Replay Animation</button>
+            </div>
+            <div id="timeline-info"></div>
+        </div>
+        
+        <div id="error-output" style="display: none;"></div>
+        <div id="info-output" style="display: none;"></div>
     </div>
+    
     <div id="canvas-wrapper">
-        <h3>2. Rendered Timeline Output</h3>
+        <h3>🎨 Animated Timeline Output</h3>
         <div id="canvas"></div>
     </div>
 </div>
@@ -67,29 +198,33 @@
     const sampleStoryboard = {
         "version": "1.0.0",
         "commands": [
-            { "type": "create_entity", "id": "user", "params": { "label": "User" } },
-            { "type": "create_entity", "id": "auth_service", "params": { "label": "Auth Service" } },
-            { "type": "create_entity", "id": "user_db", "params": { "label": "User DB" } },
-            { "type": "create_entity", "id": "api_gateway", "params": { "label": "API Gateway" } },
-            { "type": "create_entity", "id": "order_service", "params": { "label": "Order Service" } },
-            { "type": "create_entity", "id": "order_db", "params": { "label": "Order DB" } },
-            { "type": "connect_entities", "id": "conn1", "params": { "from": "user", "to": "api_gateway", "label": "1. Login Request" } },
-            { "type": "connect_entities", "id": "conn2", "params": { "from": "api_gateway", "to": "auth_service", "label": "2. Validate Credentials" } },
-            { "type": "connect_entities", "id": "conn3", "params": { "from": "auth_service", "to": "user_db", "label": "3. Fetch User" } },
-            { "type": "connect_entities", "id": "conn4", "params": { "from": "user", "to": "api_gateway", "label": "4. Create Order" } },
-            { "type": "connect_entities", "id": "conn5", "params": { "from": "api_gateway", "to": "order_service", "label": "5. Process Order" } },
-            { "type": "connect_entities", "id": "conn6", "params": { "from": "order_service", "to": "order_db", "label": "6. Save Order" } }
+            { "type": "create_entity", "id": "client", "params": { "label": "Client", "icon": "laptop" } },
+            { "type": "create_entity", "id": "server", "params": { "label": "Server", "icon": "server" } },
+            { "type": "connect_entities", "id": "request", "params": { "from": "client", "to": "server", "label": "HTTP Request" } }
         ]
     };
 
     document.getElementById('storyboard-input').value = JSON.stringify(sampleStoryboard, null, 2);
 
+    let currentTimeline = null;
+
     document.getElementById('submit-btn').addEventListener('click', async () => {
+        await choreographAndAnimate();
+    });
+
+    document.getElementById('replay-btn').addEventListener('click', () => {
+        if (currentTimeline) {
+            renderAnimatedTimeline(currentTimeline);
+        }
+    });
+
+    async function choreographAndAnimate() {
         const storyboardJson = document.getElementById('storyboard-input').value;
-        const canvas = document.getElementById('canvas');
         const errorOutput = document.getElementById('error-output');
-        canvas.innerHTML = '';
-        errorOutput.textContent = '';
+        const infoOutput = document.getElementById('info-output');
+        
+        errorOutput.style.display = 'none';
+        infoOutput.style.display = 'none';
 
         try {
             const response = await fetch('/api/genesis/choreograph', {
@@ -104,116 +239,202 @@
             }
 
             const timeline = await response.json();
-            renderTimeline(timeline, canvas);
+            currentTimeline = timeline;
+            
+            showInfo(timeline);
+            renderAnimatedTimeline(timeline);
+            
+            document.getElementById('replay-btn').disabled = false;
 
         } catch (err) {
             console.error(err);
-            errorOutput.textContent = `Error: ${err.message}`;
+            errorOutput.textContent = `❌ Error: ${err.message}`;
+            errorOutput.style.display = 'block';
         }
-    });
+    }
 
-    function renderTimeline(timeline, canvas) {
+    function showInfo(timeline) {
+        const infoOutput = document.getElementById('info-output');
+        const timelineInfo = document.getElementById('timeline-info');
+        
+        const trackCount = timeline.tracks ? timeline.tracks.length : 0;
+        const maxTime = timeline.tracks ? Math.max(...timeline.tracks.flatMap(t => 
+            t.segments.map(s => s.t1)
+        )) : 0;
+        
+        infoOutput.innerHTML = `
+            ✅ Timeline generated successfully!<br>
+            📊 Nodes: ${timeline.nodes.length} | Edges: ${timeline.edges.length} | Animation Tracks: ${trackCount}
+        `;
+        infoOutput.style.display = 'block';
+        
+        timelineInfo.innerHTML = `
+            <strong>Timeline Version:</strong> ${timeline.version}<br>
+            <strong>Total Duration:</strong> ${maxTime.toFixed(1)}s<br>
+            <strong>Animation Tracks:</strong> ${trackCount}
+        `;
+    }
+
+    function renderAnimatedTimeline(timeline) {
+        const canvas = document.getElementById('canvas');
+        canvas.innerHTML = '';
+
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         svg.setAttribute('width', timeline.stage.width);
         svg.setAttribute('height', timeline.stage.height);
         svg.style.position = 'absolute';
         svg.style.top = '0';
         svg.style.left = '0';
+        svg.classList.add('edge-container');
 
-        // Render edges first (background layer)
         timeline.edges.forEach(edge => {
-            const style = edge.edgeStyle;
-            const pathData = edge.path.map((p, i) => (i === 0 ? 'M' : 'L') + `${p.x} ${p.y}`).join(' ');
-            
-            // Main edge line
-            const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            pathEl.setAttribute('d', pathData);
-            pathEl.setAttribute('fill', 'none');
-            pathEl.setAttribute('stroke', style.strokeColor);
-            pathEl.setAttribute('stroke-width', style.strokeWidth);
-            pathEl.setAttribute('filter', 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.15))');
-            svg.appendChild(pathEl);
-            
-            // Arrow at the end
-            if (edge.path.length >= 2) {
-                const last = edge.path[edge.path.length - 1];
-                const preLast = edge.path[edge.path.length - 2];
-                const angle = Math.atan2(last.y - preLast.y, last.x - preLast.x);
-                const arrowSize = 10;
-                
-                const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-                const x1 = last.x - arrowSize * Math.cos(angle - Math.PI / 6);
-                const y1 = last.y - arrowSize * Math.sin(angle - Math.PI / 6);
-                const x2 = last.x - arrowSize * Math.cos(angle + Math.PI / 6);
-                const y2 = last.y - arrowSize * Math.sin(angle + Math.PI / 6);
-                arrow.setAttribute('points', `${last.x},${last.y} ${x1},${y1} ${x2},${y2}`);
-                arrow.setAttribute('fill', style.strokeColor);
-                svg.appendChild(arrow);
-            }
-            
-            // Edge label
-            if (edge.label && edge.path.length > 1) {
-                const midPointIndex = Math.floor(edge.path.length / 2);
-                const midPoint = edge.path[midPointIndex];
-                const labelStyle = style.labelStyle;
-                
-                // Label background
-                const labelBg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-                const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                textEl.textContent = edge.label;
-                textEl.setAttribute('font-family', labelStyle.textStyle.fontFamily);
-                textEl.setAttribute('font-size', labelStyle.textStyle.fontSize);
-                textEl.setAttribute('font-weight', labelStyle.textStyle.fontWeight);
-                textEl.setAttribute('fill', labelStyle.textStyle.color);
-                svg.appendChild(textEl);
-                
-                const bbox = textEl.getBBox();
-                const bgWidth = bbox.width + labelStyle.paddingX * 2;
-                const bgHeight = bbox.height + labelStyle.paddingY * 2;
-                
-                labelBg.setAttribute('x', midPoint.x - bgWidth / 2);
-                labelBg.setAttribute('y', midPoint.y - bgHeight / 2);
-                labelBg.setAttribute('width', bgWidth);
-                labelBg.setAttribute('height', bgHeight);
-                labelBg.setAttribute('rx', labelStyle.borderRadius);
-                labelBg.setAttribute('fill', labelStyle.backgroundColor);
-                labelBg.setAttribute('filter', 'drop-shadow(0px 2px 8px rgba(0, 0, 0, 0.1))');
-                svg.insertBefore(labelBg, textEl);
-                
-                textEl.setAttribute('x', midPoint.x);
-                textEl.setAttribute('y', midPoint.y + bbox.height / 3);
-                textEl.setAttribute('text-anchor', 'middle');
-            }
+            renderEdge(edge, svg, timeline.tracks);
         });
 
         canvas.appendChild(svg);
 
-        // Render nodes (foreground layer)
         timeline.nodes.forEach(node => {
-            const style = node.visualStyle;
-            const nodeEl = document.createElement('div');
-            nodeEl.className = 'node';
-            nodeEl.style.left = `${node.x}px`;
-            nodeEl.style.top = `${node.y}px`;
-            nodeEl.style.width = `${style.width}px`;
-            nodeEl.style.height = `${style.height}px`;
-            nodeEl.style.backgroundColor = style.backgroundColor;
-            nodeEl.style.border = `${style.borderWidth}px solid ${style.borderColor}`;
-            nodeEl.style.borderRadius = `${style.borderRadius}px`;
-            nodeEl.style.fontFamily = style.textStyle.fontFamily;
-            nodeEl.style.fontSize = `${style.textStyle.fontSize}px`;
-            nodeEl.style.fontWeight = style.textStyle.fontWeight;
-            nodeEl.style.color = style.textStyle.color;
-            
-            // Multi-layered shadow
-            nodeEl.style.boxShadow = `
-                0px 4px 8px rgba(0, 0, 0, 0.1),
-                0px 10px 20px rgba(0, 0, 0, 0.15)
-            `;
-            
-            nodeEl.textContent = node.label;
-            canvas.appendChild(nodeEl);
+            renderNode(node, canvas, timeline.tracks);
         });
+    }
+
+    function renderNode(node, canvas, tracks) {
+        const style = node.visualStyle;
+        const nodeEl = document.createElement('div');
+        nodeEl.className = 'node';
+        nodeEl.style.left = `${node.x}px`;
+        nodeEl.style.top = `${node.y}px`;
+        nodeEl.style.width = `${style.width}px`;
+        nodeEl.style.height = `${style.height}px`;
+        nodeEl.style.backgroundColor = style.backgroundColor;
+        nodeEl.style.border = `${style.borderWidth}px solid ${style.borderColor}`;
+        nodeEl.style.borderRadius = `${style.borderRadius}px`;
+        nodeEl.style.fontFamily = style.textStyle.fontFamily;
+        nodeEl.style.fontSize = `${style.textStyle.fontSize}px`;
+        nodeEl.style.fontWeight = style.textStyle.fontWeight;
+        nodeEl.style.color = style.textStyle.color;
+        nodeEl.style.boxShadow = '0px 4px 8px rgba(0, 0, 0, 0.3), 0px 10px 20px rgba(0, 0, 0, 0.2)';
+        
+        const iconSpan = document.createElement('div');
+        iconSpan.textContent = node.icon || '📦';
+        iconSpan.style.fontSize = '24px';
+        iconSpan.style.marginBottom = '8px';
+        
+        const labelSpan = document.createElement('div');
+        labelSpan.textContent = node.label;
+        
+        nodeEl.appendChild(iconSpan);
+        nodeEl.appendChild(labelSpan);
+
+        const track = tracks?.find(t => t.targetId === node.id && t.type === 'node');
+        if (track && track.segments.length > 0) {
+            const opacitySegment = track.segments.find(s => s.property === 'opacity');
+            if (opacitySegment) {
+                const duration = opacitySegment.t1 - opacitySegment.t0;
+                const delay = opacitySegment.t0;
+                
+                nodeEl.style.opacity = '0';
+                nodeEl.style.animation = `fadeInScale ${duration}s ${getEasingFunction(opacitySegment.easing)} ${delay}s forwards`;
+            }
+        }
+
+        canvas.appendChild(nodeEl);
+    }
+
+    function renderEdge(edge, svg, tracks) {
+        const style = edge.edgeStyle;
+        const pathData = edge.path.map((p, i) => (i === 0 ? 'M' : 'L') + `${p.x} ${p.y}`).join(' ');
+        
+        const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        pathEl.setAttribute('d', pathData);
+        pathEl.setAttribute('fill', 'none');
+        pathEl.setAttribute('stroke', style.strokeColor);
+        pathEl.setAttribute('stroke-width', style.strokeWidth);
+        pathEl.setAttribute('filter', 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.3))');
+        
+        const track = tracks?.find(t => t.targetId === `${edge.from}-${edge.to}` && t.type === 'edge');
+        if (track && track.segments.length > 0) {
+            const opacitySegment = track.segments.find(s => s.property === 'opacity');
+            if (opacitySegment) {
+                const duration = opacitySegment.t1 - opacitySegment.t0;
+                const delay = opacitySegment.t0;
+                
+                pathEl.style.opacity = '0';
+                pathEl.style.animation = `fadeIn ${duration}s ${getEasingFunction(opacitySegment.easing)} ${delay}s forwards`;
+            }
+        }
+        
+        svg.appendChild(pathEl);
+
+        if (edge.path.length >= 2) {
+            const last = edge.path[edge.path.length - 1];
+            const preLast = edge.path[edge.path.length - 2];
+            const angle = Math.atan2(last.y - preLast.y, last.x - preLast.x);
+            const arrowSize = 10;
+            
+            const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            const x1 = last.x - arrowSize * Math.cos(angle - Math.PI / 6);
+            const y1 = last.y - arrowSize * Math.sin(angle - Math.PI / 6);
+            const x2 = last.x - arrowSize * Math.cos(angle + Math.PI / 6);
+            const y2 = last.y - arrowSize * Math.sin(angle + Math.PI / 6);
+            arrow.setAttribute('points', `${last.x},${last.y} ${x1},${y1} ${x2},${y2}`);
+            arrow.setAttribute('fill', style.strokeColor);
+            
+            if (track) {
+                const opacitySegment = track.segments.find(s => s.property === 'opacity');
+                if (opacitySegment) {
+                    const duration = opacitySegment.t1 - opacitySegment.t0;
+                    const delay = opacitySegment.t0;
+                    arrow.style.opacity = '0';
+                    arrow.style.animation = `fadeIn ${duration}s ${getEasingFunction(opacitySegment.easing)} ${delay}s forwards`;
+                }
+            }
+            
+            svg.appendChild(arrow);
+        }
+
+        if (edge.label && edge.path.length > 1) {
+            const midPointIndex = Math.floor(edge.path.length / 2);
+            const midPoint = edge.path[midPointIndex];
+            const labelStyle = style.labelStyle;
+            
+            const labelG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            
+            const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+            textEl.textContent = edge.label;
+            textEl.setAttribute('font-family', labelStyle.textStyle.fontFamily);
+            textEl.setAttribute('font-size', labelStyle.textStyle.fontSize);
+            textEl.setAttribute('font-weight', labelStyle.textStyle.fontWeight);
+            textEl.setAttribute('fill', labelStyle.textStyle.color);
+            textEl.setAttribute('x', midPoint.x);
+            textEl.setAttribute('y', midPoint.y);
+            textEl.setAttribute('text-anchor', 'middle');
+            textEl.setAttribute('dominant-baseline', 'middle');
+            
+            labelG.appendChild(textEl);
+            
+            if (track) {
+                const opacitySegment = track.segments.find(s => s.property === 'opacity');
+                if (opacitySegment) {
+                    const duration = opacitySegment.t1 - opacitySegment.t0;
+                    const delay = opacitySegment.t0;
+                    labelG.style.opacity = '0';
+                    labelG.style.animation = `fadeIn ${duration}s ${getEasingFunction(opacitySegment.easing)} ${delay}s forwards`;
+                }
+            }
+            
+            svg.appendChild(labelG);
+        }
+    }
+
+    function getEasingFunction(easing) {
+        const easingMap = {
+            'easeInOutQuint': 'cubic-bezier(0.86, 0, 0.07, 1)',
+            'easeInOutCubic': 'cubic-bezier(0.65, 0, 0.35, 1)',
+            'easeInOutQuad': 'cubic-bezier(0.45, 0, 0.55, 1)',
+            'linear': 'linear'
+        };
+        return easingMap[easing] || 'ease-in-out';
     }
 </script>
 
