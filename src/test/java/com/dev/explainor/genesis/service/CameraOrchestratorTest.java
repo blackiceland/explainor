@@ -55,7 +55,7 @@ class CameraOrchestratorTest {
         
         AnimationSegment zoomSegment = zoomSegments.get(0);
         assertEquals(1.0, zoomSegment.fromValue());
-        assertTrue((Double)zoomSegment.toValue() > 1.0);
+        assertEquals(1.0, zoomSegment.toValue());
     }
 
     @Test

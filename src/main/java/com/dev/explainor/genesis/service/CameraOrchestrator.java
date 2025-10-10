@@ -36,11 +36,7 @@ public class CameraOrchestrator {
             return createDefaultCameraTrack();
         }
         
-        Viewport idealViewport = viewportCalculator.calculateFocus(
-            targetNode,
-            DEFAULT_CANVAS_WIDTH,
-            DEFAULT_CANVAS_HEIGHT
-        );
+        Viewport idealViewport = viewportCalculator.calculateFocus(targetNode);
         
         Viewport standardViewport = Viewport.standard(DEFAULT_CANVAS_WIDTH, DEFAULT_CANVAS_HEIGHT);
         

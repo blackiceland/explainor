@@ -68,23 +68,24 @@ public class BehaviorFactory {
         
         segments.add(AnimationSegment.opacity(startTime, startTime + 0.1, "easeInOutQuad"));
         
+        Double currentTime = startTime;
         for (int i = 0; i < fullPath.size() - 1; i++) {
             Point from = fullPath.get(i);
             Point to = fullPath.get(i + 1);
             Double segmentLength = distance(from, to);
             Double segmentDuration = (segmentLength / pathLength) * duration;
-            Double segmentStart = startTime + (i * duration / (fullPath.size() - 1));
-            Double segmentEnd = segmentStart + segmentDuration;
             
             segments.add(AnimationSegment.position(
-                segmentStart,
-                segmentEnd,
+                currentTime,
+                currentTime + segmentDuration,
                 "easeInOutQuad",
                 from.x(),
                 from.y(),
                 to.x(),
                 to.y()
             ));
+            
+            currentTime += segmentDuration;
         }
         
         segments.add(AnimationSegment.opacity(endTime - 0.1, endTime, "easeInOutQuad"));
