@@ -10,6 +10,7 @@ public record TimelineEdge(
     String to,
     String label,
     List<Point> path,
-    EdgeStyle edgeStyle
+    EdgeStyle edgeStyle,
+    double pathLength
 ) {}
 

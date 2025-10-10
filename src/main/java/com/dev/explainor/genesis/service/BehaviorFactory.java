@@ -46,13 +46,13 @@ public class BehaviorFactory {
             List<RoutedEdge> edges) {
         
         RoutedEdge edge = findEdge(params.from(), params.to(), edges);
-        if (edge == null) {
-            log.warn("Edge not found for flow: {} -> {}", params.from(), params.to());
+        if (edge == null || edge.startAnchor() == null || edge.endAnchor() == null) {
+            log.warn("Edge, startAnchor, or endAnchor not found for flow: {} -> {}", params.from(), params.to());
             return List.of();
         }
         
-        Point start = edge.effectiveStart();
-        Point end = edge.effectiveEnd();
+        Point start = edge.startAnchor();
+        Point end = edge.endAnchor();
         
         List<Point> fullPath = new ArrayList<>();
         fullPath.add(start);
@@ -61,7 +61,14 @@ public class BehaviorFactory {
 
         double pathLength = calculatePathLength(fullPath);
         double speed = params.speed() != null ? params.speed() : DEFAULT_FLOW_SPEED;
-        double duration = pathLength / speed;
+
+        double duration;
+        if (params.duration() != null) {
+            duration = params.duration();
+        } else {
+            duration = pathLength / speed;
+        }
+        
         double endTime = startTime + duration;
         
         List<AnimationSegment> segments = new ArrayList<>();

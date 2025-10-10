@@ -9,16 +9,11 @@ public record RoutedEdge(
     String from,
     String to,
     String label,
+    String lineStyle,
     List<Point> path,
     Point startAnchor,
-    Point endAnchor
+    Point endAnchor,
+    double pathLength
 ) {
-    public Point effectiveStart() {
-        return startAnchor != null ? startAnchor : (path.isEmpty() ? new Point(0, 0) : path.get(0));
-    }
-    
-    public Point effectiveEnd() {
-        return endAnchor != null ? endAnchor : (path.isEmpty() ? new Point(0, 0) : path.get(path.size() - 1));
-    }
 }
 

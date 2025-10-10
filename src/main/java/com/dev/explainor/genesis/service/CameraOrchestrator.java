@@ -15,8 +15,9 @@ import java.util.List;
 public class CameraOrchestrator {
     
     private static final Logger log = LoggerFactory.getLogger(CameraOrchestrator.class);
-    private static final Double DEFAULT_CANVAS_WIDTH = 1280.0;
-    private static final Double DEFAULT_CANVAS_HEIGHT = 720.0;
+    private static final Double DEFAULT_CAMERA_X = 640.0;
+    private static final Double DEFAULT_CAMERA_Y = 360.0;
+    private static final Double DEFAULT_ZOOM = 1.5;
     
     private final ViewportCalculator viewportCalculator;
     
@@ -28,19 +29,21 @@ public class CameraOrchestrator {
             String targetId,
             Double startTime,
             Double duration,
+            Double zoomLevel,
             List<PositionedNode> nodes) {
         
         PositionedNode targetNode = findNode(targetId, nodes);
         if (targetNode == null) {
             log.warn("Target node not found for focus: {}", targetId);
-            return createDefaultCameraTrack();
+            return AnimationTrack.cameraTrack(List.of()); // Return an empty camera track
         }
         
+        Double finalZoom = zoomLevel != null ? zoomLevel : DEFAULT_ZOOM;
         Viewport idealViewport = viewportCalculator.calculateFocus(targetNode);
         
-        Viewport standardViewport = Viewport.standard(DEFAULT_CANVAS_WIDTH, DEFAULT_CANVAS_HEIGHT);
+        Viewport standardViewport = Viewport.standard(DEFAULT_CAMERA_X, DEFAULT_CAMERA_Y);
         
-        Double endTime = startTime + duration;
+        double endTime = startTime + duration;
         List<AnimationSegment> segments = new ArrayList<>();
         
         segments.add(AnimationSegment.cameraPosition(
@@ -57,18 +60,14 @@ public class CameraOrchestrator {
             startTime,
             endTime,
             "easeInOutQuad",
-            standardViewport.zoom(),
-            idealViewport.zoom()
+            1.0,
+            finalZoom
         ));
         
-        log.info("Created focus track for '{}' at ({:.1f}, {:.1f}) with zoom {:.2f}",
-            targetId, idealViewport.centerX(), idealViewport.centerY(), idealViewport.zoom());
+        log.info("Created focus track for '{}' at ({:.1f}, {:.1f}) with zoom {:.1f}",
+            targetId, targetNode.x(), targetNode.y(), finalZoom);
         
         return AnimationTrack.cameraTrack(segments);
-    }
-    
-    private AnimationTrack createDefaultCameraTrack() {
-        return AnimationTrack.cameraTrack(List.of());
     }
     
     private PositionedNode findNode(String id, List<PositionedNode> nodes) {

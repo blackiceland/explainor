@@ -103,7 +103,8 @@
           "color" : "#374151"
         }
       }
-    }
+    },
+    "pathLength" : 160.0
   } ],
   "tracks" : [ {
     "id" : "track-node-client",
@@ -148,8 +149,8 @@
     "type" : "edge",
     "targetId" : "client-server",
     "segments" : [ {
-      "t0" : 2.3,
-      "t1" : 3.8,
+      "t0" : 2.2121320343559643,
+      "t1" : 3.7121320343559643,
       "property" : "opacity",
       "from" : 0.0,
       "to" : 1.0,

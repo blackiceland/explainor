@@ -1,5 +1,11 @@
 package com.dev.explainor.genesis.domain;
 
-public record FocusOnParams(String target, String area, Double scale) {
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+public record FocusOnParams(
+    @JsonProperty("target") String target, 
+    @JsonProperty("area") String area, 
+    @JsonProperty("scale") Double scale
+) {
 }
 

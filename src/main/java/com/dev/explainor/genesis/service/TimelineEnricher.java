@@ -18,7 +18,7 @@ import java.util.List;
 @Component
 public class TimelineEnricher {
     private static final Logger log = LoggerFactory.getLogger(TimelineEnricher.class);
-    private static final Double FOCUS_DURATION = 1.5;
+    private static final Double DEFAULT_FOCUS_DURATION = 1.5;
     
     private final TimingProvider timingProvider;
     private final BehaviorFactory behaviorFactory;
@@ -56,13 +56,16 @@ public class TimelineEnricher {
                         layoutResult.edges()
                     ));
                     
-                case FocusOnCommand focusCmd -> 
+                case FocusOnCommand focusCmd -> {
+                    FocusOnParams params = focusCmd.params();
                     tracks.add(cameraOrchestrator.createFocusTrack(
-                        focusCmd.params().target(),
+                        params.target(),
                         timing.startTime(),
-                        FOCUS_DURATION,
+                        DEFAULT_FOCUS_DURATION,
+                        params.scale(),
                         layoutResult.nodes()
                     ));
+                }
                     
                 default -> {}
             }
@@ -85,7 +88,7 @@ public class TimelineEnricher {
     }
 
     private AnimationTrack createEdgeAppearanceTrack(ConnectEntitiesCommand command, TimingInfo timing) {
-        String targetId = command.params().from() + "-" + command.params().to();
+        String targetId = command.id();
         List<AnimationSegment> segments = List.of(
             AnimationSegment.opacity(timing.startTime(), timing.endTime(), timing.easing())
         );

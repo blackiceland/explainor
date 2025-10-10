@@ -108,34 +108,7 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
             transform-origin: top left;
         }
-        .node {
-            position: absolute;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            transform: translate(-50%, -50%);
-            transition: all 0.3s ease;
-        }
-        .particle {
-            position: absolute;
-            width: 12px;
-            height: 12px;
-            background: radial-gradient(circle, #3b82f6 0%, #1e40af 100%);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.8), 0 0 20px rgba(59, 130, 246, 0.4);
-            pointer-events: none;
-        }
-        .edge-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-        }
+
         @keyframes fadeInScale {
             from {
                 opacity: 0;
@@ -149,6 +122,22 @@
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
+        }
+        @keyframes breathe {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.02);
+            }
+        }
+        @keyframes drawLine {
+            from {
+                stroke-dashoffset: 1;
+            }
+            to {
+                stroke-dashoffset: 0;
+            }
         }
         .controls-section {
             margin-top: 20px;
@@ -190,6 +179,7 @@
             <h3>🎮 Playback Controls</h3>
             <div class="playback-controls">
                 <button id="replay-btn" disabled>↻ Replay Animation</button>
+                <button id="pause-resume-btn" disabled>❚❚ Pause</button>
             </div>
             <div id="timeline-info"></div>
         </div>
@@ -218,27 +208,51 @@
 
     document.getElementById('storyboard-input').value = JSON.stringify(sampleStoryboard, null, 2);
 
-    let currentTimeline = null;
-    let animationState = {
-        camera: { x: 640, y: 360, zoom: 1 },
-        startTime: null
-    };
+    let mainAnimation = null;
 
     document.getElementById('submit-btn').addEventListener('click', async () => {
         await choreographAndAnimate();
     });
 
     document.getElementById('replay-btn').addEventListener('click', () => {
-        if (currentTimeline) {
-            renderAnimatedTimeline(currentTimeline);
+        if (mainAnimation) {
+            mainAnimation.cancel();
+            mainAnimation.play();
+            updatePauseButton(true);
         }
     });
+
+    document.getElementById('pause-resume-btn').addEventListener('click', () => {
+        if (!mainAnimation) return;
+        
+        if (mainAnimation.playState === 'running') {
+            mainAnimation.pause();
+            updatePauseButton(false);
+        } else {
+            mainAnimation.play();
+            updatePauseButton(true);
+        }
+    });
+    
+    function updatePauseButton(isPlaying) {
+        const btn = document.getElementById('pause-resume-btn');
+        if (isPlaying) {
+            btn.textContent = '❚❚ Pause';
+        } else {
+            btn.textContent = '▶ Play';
+        }
+    }
 
     async function choreographAndAnimate() {
         const storyboardJson = document.getElementById('storyboard-input').value;
         const errorOutput = document.getElementById('error-output');
         const infoOutput = document.getElementById('info-output');
         
+        if (mainAnimation) {
+            mainAnimation.cancel();
+            mainAnimation = null;
+        }
+
         errorOutput.style.display = 'none';
         infoOutput.style.display = 'none';
 
@@ -255,12 +269,16 @@
             }
 
             const timeline = await response.json();
-            currentTimeline = timeline;
             
             showInfo(timeline);
-            renderAnimatedTimeline(timeline);
-            
+            renderStaticTimeline(timeline);
+            mainAnimation = createAnimationFromTimeline(timeline);
+            mainAnimation.play();
+
             document.getElementById('replay-btn').disabled = false;
+            document.getElementById('pause-resume-btn').disabled = false;
+            updatePauseButton(true);
+            mainAnimation.onfinish = () => updatePauseButton(false);
 
         } catch (err) {
             console.error(err);
@@ -293,14 +311,10 @@
         `;
     }
 
-    function renderAnimatedTimeline(timeline) {
+    function renderStaticTimeline(timeline) {
         const canvas = document.getElementById('canvas');
         canvas.innerHTML = '';
-        
-        animationState = {
-            camera: { x: 640, y: 360, zoom: 1 },
-            startTime: null
-        };
+        canvas.style.transform = '';
 
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         svg.setAttribute('width', timeline.stage.width);
@@ -311,29 +325,25 @@
         svg.classList.add('edge-container');
 
         timeline.edges.forEach(edge => {
-            renderEdge(edge, svg, timeline.tracks);
+            renderEdge(edge, svg);
         });
 
         canvas.appendChild(svg);
 
         timeline.nodes.forEach(node => {
-            renderNode(node, canvas, timeline.tracks);
+            renderNode(node, canvas);
         });
         
         const particleTracks = timeline.tracks.filter(t => t.type === 'particle');
         particleTracks.forEach(track => {
             renderParticle(track, canvas);
         });
-        
-        const cameraTracks = timeline.tracks.filter(t => t.type === 'camera');
-        if (cameraTracks.length > 0) {
-            animateCamera(cameraTracks[0], canvas);
-        }
     }
 
-    function renderNode(node, canvas, tracks) {
+    function renderNode(node, canvas) {
         const style = node.visualStyle;
         const nodeEl = document.createElement('div');
+        nodeEl.id = `node-${node.id}`;
         nodeEl.className = 'node';
         nodeEl.style.left = `${node.x}px`;
         nodeEl.style.top = `${node.y}px`;
@@ -347,6 +357,7 @@
         nodeEl.style.fontWeight = style.textStyle.fontWeight;
         nodeEl.style.color = style.textStyle.color;
         nodeEl.style.boxShadow = '0px 4px 8px rgba(0, 0, 0, 0.3), 0px 10px 20px rgba(0, 0, 0, 0.2)';
+        nodeEl.style.opacity = '0';
         
         const iconSpan = document.createElement('div');
         iconSpan.textContent = node.icon || '📦';
@@ -358,25 +369,16 @@
         
         nodeEl.appendChild(iconSpan);
         nodeEl.appendChild(labelSpan);
-
-        const track = tracks?.find(t => t.targetId === node.id && t.type === 'node');
-        if (track && track.segments.length > 0) {
-            const opacitySegment = track.segments.find(s => s.property === 'opacity');
-            if (opacitySegment) {
-                const duration = opacitySegment.t1 - opacitySegment.t0;
-                const delay = opacitySegment.t0;
-                
-                nodeEl.style.opacity = '0';
-                nodeEl.style.animation = `fadeInScale ${duration}s ${getEasingFunction(opacitySegment.easing)} ${delay}s forwards`;
-            }
-        }
-
         canvas.appendChild(nodeEl);
     }
 
-    function renderEdge(edge, svg, tracks) {
+    function renderEdge(edge, svg) {
         const style = edge.edgeStyle;
         const pathData = edge.path.map((p, i) => (i === 0 ? 'M' : 'L') + `${p.x} ${p.y}`).join(' ');
+        
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.id = `edge-${edge.id}`;
+        g.style.opacity = '0';
         
         const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         pathEl.setAttribute('d', pathData);
@@ -384,20 +386,7 @@
         pathEl.setAttribute('stroke', style.strokeColor);
         pathEl.setAttribute('stroke-width', style.strokeWidth);
         pathEl.setAttribute('filter', 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.3))');
-        
-        const track = tracks?.find(t => t.targetId === `${edge.from}-${edge.to}` && t.type === 'edge');
-        if (track && track.segments.length > 0) {
-            const opacitySegment = track.segments.find(s => s.property === 'opacity');
-            if (opacitySegment) {
-                const duration = opacitySegment.t1 - opacitySegment.t0;
-                const delay = opacitySegment.t0;
-                
-                pathEl.style.opacity = '0';
-                pathEl.style.animation = `fadeIn ${duration}s ${getEasingFunction(opacitySegment.easing)} ${delay}s forwards`;
-            }
-        }
-        
-        svg.appendChild(pathEl);
+        g.appendChild(pathEl);
 
         if (edge.path.length >= 2) {
             const last = edge.path[edge.path.length - 1];
@@ -412,26 +401,13 @@
             const y2 = last.y - arrowSize * Math.sin(angle + Math.PI / 6);
             arrow.setAttribute('points', `${last.x},${last.y} ${x1},${y1} ${x2},${y2}`);
             arrow.setAttribute('fill', style.strokeColor);
-            
-            if (track) {
-                const opacitySegment = track.segments.find(s => s.property === 'opacity');
-                if (opacitySegment) {
-                    const duration = opacitySegment.t1 - opacitySegment.t0;
-                    const delay = opacitySegment.t0;
-                    arrow.style.opacity = '0';
-                    arrow.style.animation = `fadeIn ${duration}s ${getEasingFunction(opacitySegment.easing)} ${delay}s forwards`;
-                }
-            }
-            
-            svg.appendChild(arrow);
+            g.appendChild(arrow);
         }
 
         if (edge.label && edge.path.length > 1) {
             const midPointIndex = Math.floor(edge.path.length / 2);
             const midPoint = edge.path[midPointIndex];
             const labelStyle = style.labelStyle;
-            
-            const labelG = document.createElementNS('http://www.w3.org/2000/svg', 'g');
             
             const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
             textEl.textContent = edge.label;
@@ -443,107 +419,140 @@
             textEl.setAttribute('y', midPoint.y);
             textEl.setAttribute('text-anchor', 'middle');
             textEl.setAttribute('dominant-baseline', 'middle');
-            
-            labelG.appendChild(textEl);
-            
-            if (track) {
-                const opacitySegment = track.segments.find(s => s.property === 'opacity');
-                if (opacitySegment) {
-                    const duration = opacitySegment.t1 - opacitySegment.t0;
-                    const delay = opacitySegment.t0;
-                    labelG.style.opacity = '0';
-                    labelG.style.animation = `fadeIn ${duration}s ${getEasingFunction(opacitySegment.easing)} ${delay}s forwards`;
-                }
-            }
-            
-            svg.appendChild(labelG);
+            g.appendChild(textEl);
         }
+        
+        if (style.lineStyle === 'dashed') {
+            pathEl.setAttribute('stroke-dasharray', '10, 10');
+        }
+
+        svg.appendChild(g);
     }
 
     function renderParticle(track, canvas) {
         const particleEl = document.createElement('div');
+        particleEl.id = `particle-${track.targetId}`;
         particleEl.className = 'particle';
         particleEl.style.opacity = '0';
         
-        const positionSegments = track.segments.filter(s => s.property === 'position');
-        const opacitySegments = track.segments.filter(s => s.property === 'opacity');
-        
-        if (positionSegments.length === 0) return;
-        
-        const firstPos = positionSegments[0].from;
-        particleEl.style.left = `${firstPos.x}px`;
-        particleEl.style.top = `${firstPos.y}px`;
+        const firstPos = track.segments.find(s => s.property === 'position')?.from;
+        if (firstPos) {
+            particleEl.style.transform = `translate(${firstPos.x - 6}px, ${firstPos.y - 6}px)`;
+        }
         
         canvas.appendChild(particleEl);
-        
-        animateParticle(particleEl, track.segments);
     }
 
-    function animateParticle(element, segments) {
-        segments.forEach(segment => {
-            const delay = segment.t0 * 1000;
-            const duration = (segment.t1 - segment.t0) * 1000;
-            
-            setTimeout(() => {
-                if (segment.property === 'position') {
-                    element.style.transition = `left ${duration}ms ${getEasingFunction(segment.easing)}, top ${duration}ms ${getEasingFunction(segment.easing)}`;
-                    element.style.left = `${segment.to.x}px`;
-                    element.style.top = `${segment.to.y}px`;
-                } else if (segment.property === 'opacity') {
-                    element.style.transition = `opacity ${duration}ms ${getEasingFunction(segment.easing)}`;
-                    element.style.opacity = segment.to;
+    function createAnimationFromTimeline(timeline) {
+        const effects = [];
+        const totalDuration = Math.max(0, ...timeline.tracks.flatMap(t => t.segments.map(s => s.t1)));
+
+        timeline.tracks.forEach(track => {
+            let target;
+            switch (track.type) {
+                case 'node':
+                    target = document.getElementById(`node-${track.targetId}`);
+                    break;
+                case 'edge':
+                    target = document.getElementById(`edge-${track.id}`);
+                    break;
+                case 'particle':
+                    target = document.getElementById(`particle-${track.targetId}`);
+                    break;
+                case 'camera':
+                    target = document.getElementById('canvas');
+                    break;
+            }
+            if (!target) return;
+
+            const propertyGroups = {};
+
+            track.segments.forEach(segment => {
+                if (!propertyGroups[segment.property]) {
+                    propertyGroups[segment.property] = [];
                 }
-            }, delay);
+                propertyGroups[segment.property].push(segment);
+            });
+
+            for (const property in propertyGroups) {
+                const segments = propertyGroups[property];
+                const keyframeEffect = createKeyframeEffectForProperty(target, property, segments, totalDuration);
+                if(keyframeEffect) effects.push(keyframeEffect);
+            }
         });
+
+        return new Animation(new GroupEffect(effects));
     }
 
-    function animateCamera(cameraTrack, canvas) {
-        const segments = cameraTrack.segments;
-        
+    function createKeyframeEffectForProperty(target, property, segments, totalDuration) {
+        const keyframes = [];
+        let easing = 'linear';
+
         segments.forEach(segment => {
-            const delay = segment.t0 * 1000;
-            const duration = (segment.t1 - segment.t0) * 1000;
-            
-            setTimeout(() => {
-                if (segment.property === 'cameraPosition') {
-                    const targetX = segment.to.x;
-                    const targetY = segment.to.y;
-                    
-                    canvas.style.transition = `transform ${duration}ms ${getEasingFunction(segment.easing)}`;
-                    
-                    const offsetX = 640 - targetX;
-                    const offsetY = 360 - targetY;
-                    const currentZoom = animationState.camera.zoom;
-                    
-                    canvas.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${currentZoom})`;
-                    
-                    animationState.camera.x = targetX;
-                    animationState.camera.y = targetY;
-                    
-                } else if (segment.property === 'zoom') {
-                    const targetZoom = segment.to;
-                    
-                    canvas.style.transition = `transform ${duration}ms ${getEasingFunction(segment.easing)}`;
-                    
-                    const offsetX = 640 - animationState.camera.x;
-                    const offsetY = 360 - animationState.camera.y;
-                    
-                    canvas.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${targetZoom})`;
-                    
-                    animationState.camera.zoom = targetZoom;
-                }
-            }, delay);
+            keyframes.push(
+                { offset: segment.t0 / totalDuration, ...getStyle(property, segment.from) },
+                { offset: segment.t1 / totalDuration, ...getStyle(property, segment.to) }
+            );
+            easing = segment.easing; // Capture easing from the last segment
         });
-    }
+        
+        const uniqueKeyframes = Array.from(new Map(keyframes.map(k => [k.offset, k])).values())
+                                     .sort((a,b) => a.offset - b.offset);
 
-    function getEasingFunction(easing) {
-        const easingMap = {
-            'easeInOutQuint': 'cubic-bezier(0.86, 0, 0.07, 1)',
-            'easeInOutCubic': 'cubic-bezier(0.65, 0, 0.35, 1)',
-            'easeInOutQuad': 'cubic-bezier(0.45, 0, 0.55, 1)',
-            'linear': 'linear'
+        if (uniqueKeyframes.length < 2) return null;
+
+        if (uniqueKeyframes[0].offset > 0) {
+            const firstFrame = { ...uniqueKeyframes[0] };
+            firstFrame.offset = 0;
+            uniqueKeyframes.unshift(firstFrame);
+        }
+
+        if (target.classList.contains('node') && property === 'opacity' && uniqueKeyframes.some(k => k.opacity > 0)) {
+            const lastOpacityFrame = uniqueKeyframes[uniqueKeyframes.length - 1];
+            const startBreathingOffset = lastOpacityFrame.offset;
+
+            if (startBreathingOffset < 1.0) {
+                 uniqueKeyframes.push({
+                    offset: startBreathingOffset + 0.001,
+                    transform: 'translate(-50%, -50%) scale(1)',
+                    easing: 'ease-in-out'
+                });
+                uniqueKeyframes.push({
+                    offset: (startBreathingOffset + 1.0) / 2,
+                    transform: 'translate(-50%, -50%) scale(1.02)',
+                    easing: 'ease-in-out'
+                });
+                uniqueKeyframes.push({
+                    offset: 1.0,
+                    transform: 'translate(-50%, -50%) scale(1)',
+                    easing: 'ease-in-out'
+                });
+            }
+        }
+
+        const options = {
+            duration: totalDuration * 1000,
+            fill: 'forwards',
+            easing: easing,
         };
-        return easingMap[easing] || 'ease-in-out';
+        
+        return new KeyframeEffect(target, uniqueKeyframes, options);
+    }
+    
+    function getStyle(property, value) {
+        switch (property) {
+            case 'opacity':
+                return { opacity: value };
+            case 'scale':
+                 return { transform: `translate(-50%, -50%) scale(${value})` };
+            case 'position':
+                return { transform: `translate(${value.x - 6}px, ${value.y - 6}px)` }; // 6 is half particle size
+            case 'cameraPosition':
+            case 'zoom':
+                return {};
+            default:
+                return {};
+        }
     }
 </script>
 

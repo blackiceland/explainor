@@ -4,6 +4,7 @@ public record LayoutEdge(
     String id,
     String from,
     String to,
-    String label
+    String label,
+    String lineStyle
 ) {}
 

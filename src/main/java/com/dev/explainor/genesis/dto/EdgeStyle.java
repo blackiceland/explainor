@@ -3,6 +3,7 @@ package com.dev.explainor.genesis.dto;
 public record EdgeStyle(
     String strokeColor,
     double strokeWidth,
+    String lineStyle,
     String arrowStyle,
     VisualStyle.Shadow shadow,
     LabelStyle labelStyle
@@ -11,6 +12,7 @@ public record EdgeStyle(
         return new EdgeStyle(
             "#374151",
             3.0,
+            "solid",
             "triangle",
             new VisualStyle.Shadow(0, 2, 4, 0, "rgba(0, 0, 0, 0.15)"),
             LabelStyle.defaultLabelStyle()

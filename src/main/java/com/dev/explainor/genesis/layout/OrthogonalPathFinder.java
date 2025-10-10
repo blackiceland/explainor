@@ -40,12 +40,22 @@ public class OrthogonalPathFinder implements PathFinder {
             PositionedNode to = find(nodes, edge.to());
             List<Point> path = route(from, to, blocked);
             
-            Point startAnchor = AnchorCalculator.calculateExitPoint(from, to.x() > from.x() ? 
-                new Point(to.x(), from.y()) : new Point(to.x(), to.y()));
-            Point endAnchor = AnchorCalculator.calculateEntryPoint(to, from.x() > to.x() ? 
-                new Point(from.x(), to.y()) : new Point(from.x(), from.y()));
+            Point startAnchor = AnchorCalculator.calculateExitPoint(
+                from,
+                path.isEmpty() ? new Point(to.x(), to.y()) : path.get(0)
+            );
+            Point endAnchor = AnchorCalculator.calculateEntryPoint(
+                to,
+                path.isEmpty() ? new Point(from.x(), from.y()) : path.get(path.size() - 1)
+            );
+
+            List<Point> fullPath = new ArrayList<>();
+            fullPath.add(startAnchor);
+            fullPath.addAll(path);
+            fullPath.add(endAnchor);
+            double pathLength = calculatePathLength(fullPath);
             
-            result.add(new RoutedEdge(edge.id(), edge.from(), edge.to(), edge.label(), path, startAnchor, endAnchor));
+            result.add(new RoutedEdge(edge.id(), edge.from(), edge.to(), edge.label(), edge.lineStyle(), path, startAnchor, endAnchor, pathLength));
         }
         return result;
     }
@@ -102,6 +112,18 @@ public class OrthogonalPathFinder implements PathFinder {
             path.add(goal);
         }
         return simplify(path);
+    }
+
+    private double calculatePathLength(List<Point> path) {
+        double length = 0.0;
+        for (int i = 0; i < path.size() - 1; i++) {
+            length += distance(path.get(i), path.get(i + 1));
+        }
+        return length;
+    }
+
+    private double distance(Point p1, Point p2) {
+        return Math.sqrt(Math.pow(p2.x() - p1.x(), 2) + Math.pow(p2.y() - p1.y(), 2));
     }
 
     private List<GridPoint> neighbors(GridPoint p) {

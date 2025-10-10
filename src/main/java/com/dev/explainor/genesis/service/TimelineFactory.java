@@ -20,10 +20,6 @@ public class TimelineFactory {
     private static final int DEFAULT_CANVAS_WIDTH = 1280;
     private static final int DEFAULT_CANVAS_HEIGHT = 720;
 
-    public FinalTimelineV1 createFrom(LayoutResult layoutResult) {
-        return createFrom(layoutResult, List.of());
-    }
-
     public FinalTimelineV1 createFrom(LayoutResult layoutResult, List<AnimationTrack> animationTracks) {
         Stage stage = new Stage(
             DEFAULT_CANVAS_WIDTH,
@@ -57,8 +53,25 @@ public class TimelineFactory {
                 routedEdge.to(),
                 routedEdge.label(),
                 routedEdge.path(),
-                EdgeStyle.defaultEdgeStyle()
+                EdgeStyle.defaultEdgeStyle(),
+                calculatePathLength(routedEdge.path())
             ))
             .toList();
+    }
+    
+    private double calculatePathLength(List<com.dev.explainor.genesis.domain.Point> path) {
+        if (path.isEmpty()) {
+            return 0.0;
+        }
+        
+        double length = 0.0;
+        for (int i = 0; i < path.size() - 1; i++) {
+            com.dev.explainor.genesis.domain.Point p1 = path.get(i);
+            com.dev.explainor.genesis.domain.Point p2 = path.get(i + 1);
+            double dx = p2.x() - p1.x();
+            double dy = p2.y() - p1.y();
+            length += Math.sqrt(dx * dx + dy * dy);
+        }
+        return length;
     }
 }
