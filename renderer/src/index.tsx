@@ -1,7 +1,7 @@
-import { Composition, registerRoot } from 'remotion';
+import { Composition, registerRoot, getInputProps } from 'remotion';
 import { Composition as VideoComposition } from './remotion/Composition';
 
-const sampleTimeline = {
+const defaultTimeline = {
   version: '1.1.0',
   stage: {
     width: 1280,
@@ -124,17 +124,28 @@ const sampleTimeline = {
 };
 
 registerRoot(() => {
+  const inputProps = getInputProps();
+  const timeline = (inputProps as any)?.timeline || defaultTimeline;
+  
+  const maxTime = timeline.tracks && Array.isArray(timeline.tracks)
+    ? Math.max(...timeline.tracks.flatMap((t: any) => t.segments.map((s: any) => s.t1)), 5)
+    : 5;
+  const durationInFrames = Math.ceil(maxTime * 30);
+
+  const stageWidth = timeline.stage?.width || 1280;
+  const stageHeight = timeline.stage?.height || 720;
+
   return (
     <>
       <Composition
         id="Main"
         component={VideoComposition}
-        durationInFrames={150}
+        durationInFrames={durationInFrames}
         fps={30}
-        width={1280}
-        height={720}
+        width={stageWidth}
+        height={stageHeight}
         defaultProps={{
-          timeline: sampleTimeline,
+          timeline: timeline,
         }}
       />
     </>

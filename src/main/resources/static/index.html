@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Explainor - Stage 5: "Living Stage"</title>
+    <title>Explainor - Video Generator</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -12,190 +12,98 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            justify-content: center;
             padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 800px;
+            width: 100%;
         }
         h1 {
-            color: white;
+            color: #1f2937;
             margin-bottom: 10px;
             font-size: 32px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            text-align: center;
         }
         .subtitle {
-            color: rgba(255,255,255,0.9);
-            margin-bottom: 30px;
+            color: #6b7280;
+            margin-bottom: 40px;
             font-size: 16px;
-        }
-        #container {
-            display: flex;
-            width: 90%;
-            max-width: 1800px;
-            gap: 20px;
-        }
-        #controls {
-            flex: 1;
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
-        #canvas-wrapper {
-            flex: 2;
-            background: white;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-        }
-        h3 {
-            margin-bottom: 15px;
-            color: #1f2937;
-            font-size: 18px;
-        }
-        textarea {
-            width: 100%;
-            height: 400px;
-            font-family: 'Monaco', 'Menlo', monospace;
-            font-size: 12px;
-            border: 2px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 12px;
-            resize: vertical;
+            text-align: center;
         }
         button {
             width: 100%;
-            padding: 14px 20px;
-            font-size: 16px;
+            padding: 20px;
+            font-size: 18px;
             font-weight: 600;
             cursor: pointer;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
             border: none;
-            border-radius: 8px;
-            margin-top: 15px;
+            border-radius: 12px;
             transition: transform 0.2s, box-shadow 0.2s;
         }
-        button:hover {
+        button:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
         }
-        button:active {
+        button:active:not(:disabled) {
             transform: translateY(0);
+        }
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
         #error-output {
             color: #ef4444;
-            margin-top: 15px;
-            font-weight: 500;
-            padding: 12px;
-            background: #fee;
-            border-radius: 6px;
-            border-left: 4px solid #ef4444;
-        }
-        #info-output {
-            color: #10b981;
-            margin-top: 15px;
-            font-weight: 500;
-            padding: 12px;
-            background: #d1fae5;
-            border-radius: 6px;
-            border-left: 4px solid #10b981;
-        }
-        #canvas {
-            position: relative;
-            width: 1280px;
-            height: 720px;
-            background: #0f172a;
-            overflow: hidden;
-            border-radius: 8px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-            transform-origin: top left;
-        }
-
-        @keyframes fadeInScale {
-            from {
-                opacity: 0;
-                transform: translate(-50%, -50%) scale(0);
-            }
-            to {
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(1);
-            }
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        @keyframes breathe {
-            0%, 100% {
-                transform: translate(-50%, -50%) scale(1);
-            }
-            50% {
-                transform: translate(-50%, -50%) scale(1.02);
-            }
-        }
-        @keyframes drawLine {
-            from {
-                stroke-dashoffset: 1;
-            }
-            to {
-                stroke-dashoffset: 0;
-            }
-        }
-        .controls-section {
             margin-top: 20px;
-            padding-top: 20px;
-            border-top: 2px solid #e5e7eb;
+            font-weight: 500;
+            padding: 16px;
+            background: #fee;
+            border-radius: 8px;
+            border-left: 4px solid #ef4444;
+            display: none;
         }
-        .playback-controls {
-            display: flex;
-            gap: 10px;
-            align-items: center;
+        #video-output {
+            margin-top: 30px;
+            display: none;
         }
-        .playback-controls button {
-            flex: 1;
-            margin-top: 0;
+        #video-output .success-message {
+            color: #10b981;
+            font-weight: 600;
+            margin-bottom: 15px;
+            font-size: 18px;
+            text-align: center;
         }
-        #timeline-info {
-            margin-top: 10px;
-            padding: 10px;
-            background: #f3f4f6;
-            border-radius: 6px;
-            font-size: 13px;
-            color: #4b5563;
+        video {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.2);
         }
     </style>
 </head>
 <body>
 
-<h1>🌟 Explainor - Stage 5: "Living Stage"</h1>
-<p class="subtitle">Интеллектуальная геометрия и адаптивная камера</p>
-
-<div id="container">
-    <div id="controls">
-        <h3>📝 Storyboard Input</h3>
-        <textarea id="storyboard-input"></textarea>
-        
-        <button id="submit-btn">🎭 Choreograph & Animate</button>
-        
-        <div class="controls-section">
-            <h3>🎮 Playback Controls</h3>
-            <div class="playback-controls">
-                <button id="replay-btn" disabled>↻ Replay Animation</button>
-                <button id="pause-resume-btn" disabled>❚❚ Pause</button>
-            </div>
-            <div id="timeline-info"></div>
-        </div>
-        
-        <div id="error-output" style="display: none;"></div>
-        <div id="info-output" style="display: none;"></div>
-    </div>
+<div class="container">
+    <h1>🎬 Explainor</h1>
+    <p class="subtitle">Video Generator</p>
     
-    <div id="canvas-wrapper">
-        <h3>🎨 Animated Timeline Output</h3>
-        <div id="canvas"></div>
+    <button id="render-btn">🎬 Generate Video</button>
+    
+    <div id="error-output"></div>
+    
+    <div id="video-output">
+        <div class="success-message">✅ Video generated successfully!</div>
+        <video id="video-player" controls></video>
     </div>
 </div>
 
 <script>
-    const sampleStoryboard = {
+    const storyboard = {
         "version": "1.0.0",
         "commands": [
             { "type": "create_entity", "id": "client", "params": { "label": "Client", "icon": "💻" } },
@@ -206,352 +114,47 @@
         ]
     };
 
-    document.getElementById('storyboard-input').value = JSON.stringify(sampleStoryboard, null, 2);
-
-    let mainAnimation = null;
-
-    document.getElementById('submit-btn').addEventListener('click', async () => {
-        await choreographAndAnimate();
+    document.getElementById('render-btn').addEventListener('click', async () => {
+        await renderVideo();
     });
 
-    document.getElementById('replay-btn').addEventListener('click', () => {
-        if (mainAnimation) {
-            mainAnimation.cancel();
-            mainAnimation.play();
-            updatePauseButton(true);
-        }
-    });
-
-    document.getElementById('pause-resume-btn').addEventListener('click', () => {
-        if (!mainAnimation) return;
-        
-        if (mainAnimation.playState === 'running') {
-            mainAnimation.pause();
-            updatePauseButton(false);
-        } else {
-            mainAnimation.play();
-            updatePauseButton(true);
-        }
-    });
-    
-    function updatePauseButton(isPlaying) {
-        const btn = document.getElementById('pause-resume-btn');
-        if (isPlaying) {
-            btn.textContent = '❚❚ Pause';
-        } else {
-            btn.textContent = '▶ Play';
-        }
-    }
-
-    async function choreographAndAnimate() {
-        const storyboardJson = document.getElementById('storyboard-input').value;
+    async function renderVideo() {
         const errorOutput = document.getElementById('error-output');
-        const infoOutput = document.getElementById('info-output');
-        
-        if (mainAnimation) {
-            mainAnimation.cancel();
-            mainAnimation = null;
-        }
+        const videoOutput = document.getElementById('video-output');
+        const renderBtn = document.getElementById('render-btn');
 
         errorOutput.style.display = 'none';
-        infoOutput.style.display = 'none';
+        videoOutput.style.display = 'none';
+
+        renderBtn.disabled = true;
+        renderBtn.textContent = '⏳ Generating video...';
 
         try {
-            const response = await fetch('/api/genesis/choreograph', {
+            const response = await fetch('/api/genesis/render-video', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: storyboardJson
+                body: JSON.stringify(storyboard)
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(`[${response.status}] ${errorData.error}: ${errorData.message}`);
+                throw new Error(`[${response.status}] ${errorData.error || 'Unknown error'}`);
             }
 
-            const timeline = await response.json();
-            
-            showInfo(timeline);
-            renderStaticTimeline(timeline);
-            mainAnimation = createAnimationFromTimeline(timeline);
-            mainAnimation.play();
+            const result = await response.json();
+            const videoUrl = result.url;
 
-            document.getElementById('replay-btn').disabled = false;
-            document.getElementById('pause-resume-btn').disabled = false;
-            updatePauseButton(true);
-            mainAnimation.onfinish = () => updatePauseButton(false);
+            const videoPlayer = document.getElementById('video-player');
+            videoPlayer.src = `http://localhost:3030${videoUrl}`;
+            videoOutput.style.display = 'block';
 
         } catch (err) {
             console.error(err);
             errorOutput.textContent = `❌ Error: ${err.message}`;
             errorOutput.style.display = 'block';
-        }
-    }
-
-    function showInfo(timeline) {
-        const infoOutput = document.getElementById('info-output');
-        const timelineInfo = document.getElementById('timeline-info');
-        
-        const trackCount = timeline.tracks ? timeline.tracks.length : 0;
-        const particleCount = timeline.tracks ? timeline.tracks.filter(t => t.type === 'particle').length : 0;
-        const cameraCount = timeline.tracks ? timeline.tracks.filter(t => t.type === 'camera').length : 0;
-        const maxTime = timeline.tracks ? Math.max(...timeline.tracks.flatMap(t => 
-            t.segments.map(s => s.t1)
-        )) : 0;
-        
-        infoOutput.innerHTML = `
-            ✅ Timeline generated successfully!<br>
-            📊 Nodes: ${timeline.nodes.length} | Edges: ${timeline.edges.length} | Tracks: ${trackCount} (🎯 ${particleCount} particles, 🎥 ${cameraCount} camera)
-        `;
-        infoOutput.style.display = 'block';
-        
-        timelineInfo.innerHTML = `
-            <strong>Timeline Version:</strong> ${timeline.version}<br>
-            <strong>Total Duration:</strong> ${maxTime.toFixed(1)}s<br>
-            <strong>Animation Tracks:</strong> ${trackCount}
-        `;
-    }
-
-    function renderStaticTimeline(timeline) {
-        const canvas = document.getElementById('canvas');
-        canvas.innerHTML = '';
-        canvas.style.transform = '';
-
-        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        svg.setAttribute('width', timeline.stage.width);
-        svg.setAttribute('height', timeline.stage.height);
-        svg.style.position = 'absolute';
-        svg.style.top = '0';
-        svg.style.left = '0';
-        svg.classList.add('edge-container');
-
-        timeline.edges.forEach(edge => {
-            renderEdge(edge, svg);
-        });
-
-        canvas.appendChild(svg);
-
-        timeline.nodes.forEach(node => {
-            renderNode(node, canvas);
-        });
-        
-        const particleTracks = timeline.tracks.filter(t => t.type === 'particle');
-        particleTracks.forEach(track => {
-            renderParticle(track, canvas);
-        });
-    }
-
-    function renderNode(node, canvas) {
-        const style = node.visualStyle;
-        const nodeEl = document.createElement('div');
-        nodeEl.id = `node-${node.id}`;
-        nodeEl.className = 'node';
-        nodeEl.style.left = `${node.x}px`;
-        nodeEl.style.top = `${node.y}px`;
-        nodeEl.style.width = `${style.width}px`;
-        nodeEl.style.height = `${style.height}px`;
-        nodeEl.style.backgroundColor = style.backgroundColor;
-        nodeEl.style.border = `${style.borderWidth}px solid ${style.borderColor}`;
-        nodeEl.style.borderRadius = `${style.borderRadius}px`;
-        nodeEl.style.fontFamily = style.textStyle.fontFamily;
-        nodeEl.style.fontSize = `${style.textStyle.fontSize}px`;
-        nodeEl.style.fontWeight = style.textStyle.fontWeight;
-        nodeEl.style.color = style.textStyle.color;
-        nodeEl.style.boxShadow = '0px 4px 8px rgba(0, 0, 0, 0.3), 0px 10px 20px rgba(0, 0, 0, 0.2)';
-        nodeEl.style.opacity = '0';
-        
-        const iconSpan = document.createElement('div');
-        iconSpan.textContent = node.icon || '📦';
-        iconSpan.style.fontSize = '24px';
-        iconSpan.style.marginBottom = '8px';
-        
-        const labelSpan = document.createElement('div');
-        labelSpan.textContent = node.label;
-        
-        nodeEl.appendChild(iconSpan);
-        nodeEl.appendChild(labelSpan);
-        canvas.appendChild(nodeEl);
-    }
-
-    function renderEdge(edge, svg) {
-        const style = edge.edgeStyle;
-        const pathData = edge.path.map((p, i) => (i === 0 ? 'M' : 'L') + `${p.x} ${p.y}`).join(' ');
-        
-        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        g.id = `edge-${edge.id}`;
-        g.style.opacity = '0';
-        
-        const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        pathEl.setAttribute('d', pathData);
-        pathEl.setAttribute('fill', 'none');
-        pathEl.setAttribute('stroke', style.strokeColor);
-        pathEl.setAttribute('stroke-width', style.strokeWidth);
-        pathEl.setAttribute('filter', 'drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.3))');
-        g.appendChild(pathEl);
-
-        if (edge.path.length >= 2) {
-            const last = edge.path[edge.path.length - 1];
-            const preLast = edge.path[edge.path.length - 2];
-            const angle = Math.atan2(last.y - preLast.y, last.x - preLast.x);
-            const arrowSize = 10;
-            
-            const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-            const x1 = last.x - arrowSize * Math.cos(angle - Math.PI / 6);
-            const y1 = last.y - arrowSize * Math.sin(angle - Math.PI / 6);
-            const x2 = last.x - arrowSize * Math.cos(angle + Math.PI / 6);
-            const y2 = last.y - arrowSize * Math.sin(angle + Math.PI / 6);
-            arrow.setAttribute('points', `${last.x},${last.y} ${x1},${y1} ${x2},${y2}`);
-            arrow.setAttribute('fill', style.strokeColor);
-            g.appendChild(arrow);
-        }
-
-        if (edge.label && edge.path.length > 1) {
-            const midPointIndex = Math.floor(edge.path.length / 2);
-            const midPoint = edge.path[midPointIndex];
-            const labelStyle = style.labelStyle;
-            
-            const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            textEl.textContent = edge.label;
-            textEl.setAttribute('font-family', labelStyle.textStyle.fontFamily);
-            textEl.setAttribute('font-size', labelStyle.textStyle.fontSize);
-            textEl.setAttribute('font-weight', labelStyle.textStyle.fontWeight);
-            textEl.setAttribute('fill', labelStyle.textStyle.color);
-            textEl.setAttribute('x', midPoint.x);
-            textEl.setAttribute('y', midPoint.y);
-            textEl.setAttribute('text-anchor', 'middle');
-            textEl.setAttribute('dominant-baseline', 'middle');
-            g.appendChild(textEl);
-        }
-        
-        if (style.lineStyle === 'dashed') {
-            pathEl.setAttribute('stroke-dasharray', '10, 10');
-        }
-
-        svg.appendChild(g);
-    }
-
-    function renderParticle(track, canvas) {
-        const particleEl = document.createElement('div');
-        particleEl.id = `particle-${track.targetId}`;
-        particleEl.className = 'particle';
-        particleEl.style.opacity = '0';
-        
-        const firstPos = track.segments.find(s => s.property === 'position')?.from;
-        if (firstPos) {
-            particleEl.style.transform = `translate(${firstPos.x - 6}px, ${firstPos.y - 6}px)`;
-        }
-        
-        canvas.appendChild(particleEl);
-    }
-
-    function createAnimationFromTimeline(timeline) {
-        const effects = [];
-        const totalDuration = Math.max(0, ...timeline.tracks.flatMap(t => t.segments.map(s => s.t1)));
-
-        timeline.tracks.forEach(track => {
-            let target;
-            switch (track.type) {
-                case 'node':
-                    target = document.getElementById(`node-${track.targetId}`);
-                    break;
-                case 'edge':
-                    target = document.getElementById(`edge-${track.id}`);
-                    break;
-                case 'particle':
-                    target = document.getElementById(`particle-${track.targetId}`);
-                    break;
-                case 'camera':
-                    target = document.getElementById('canvas');
-                    break;
-            }
-            if (!target) return;
-
-            const propertyGroups = {};
-
-            track.segments.forEach(segment => {
-                if (!propertyGroups[segment.property]) {
-                    propertyGroups[segment.property] = [];
-                }
-                propertyGroups[segment.property].push(segment);
-            });
-
-            for (const property in propertyGroups) {
-                const segments = propertyGroups[property];
-                const keyframeEffect = createKeyframeEffectForProperty(target, property, segments, totalDuration);
-                if(keyframeEffect) effects.push(keyframeEffect);
-            }
-        });
-
-        return new Animation(new GroupEffect(effects));
-    }
-
-    function createKeyframeEffectForProperty(target, property, segments, totalDuration) {
-        const keyframes = [];
-        let easing = 'linear';
-
-        segments.forEach(segment => {
-            keyframes.push(
-                { offset: segment.t0 / totalDuration, ...getStyle(property, segment.from) },
-                { offset: segment.t1 / totalDuration, ...getStyle(property, segment.to) }
-            );
-            easing = segment.easing; // Capture easing from the last segment
-        });
-        
-        const uniqueKeyframes = Array.from(new Map(keyframes.map(k => [k.offset, k])).values())
-                                     .sort((a,b) => a.offset - b.offset);
-
-        if (uniqueKeyframes.length < 2) return null;
-
-        if (uniqueKeyframes[0].offset > 0) {
-            const firstFrame = { ...uniqueKeyframes[0] };
-            firstFrame.offset = 0;
-            uniqueKeyframes.unshift(firstFrame);
-        }
-
-        if (target.classList.contains('node') && property === 'opacity' && uniqueKeyframes.some(k => k.opacity > 0)) {
-            const lastOpacityFrame = uniqueKeyframes[uniqueKeyframes.length - 1];
-            const startBreathingOffset = lastOpacityFrame.offset;
-
-            if (startBreathingOffset < 1.0) {
-                 uniqueKeyframes.push({
-                    offset: startBreathingOffset + 0.001,
-                    transform: 'translate(-50%, -50%) scale(1)',
-                    easing: 'ease-in-out'
-                });
-                uniqueKeyframes.push({
-                    offset: (startBreathingOffset + 1.0) / 2,
-                    transform: 'translate(-50%, -50%) scale(1.02)',
-                    easing: 'ease-in-out'
-                });
-                uniqueKeyframes.push({
-                    offset: 1.0,
-                    transform: 'translate(-50%, -50%) scale(1)',
-                    easing: 'ease-in-out'
-                });
-            }
-        }
-
-        const options = {
-            duration: totalDuration * 1000,
-            fill: 'forwards',
-            easing: easing,
-        };
-        
-        return new KeyframeEffect(target, uniqueKeyframes, options);
-    }
-    
-    function getStyle(property, value) {
-        switch (property) {
-            case 'opacity':
-                return { opacity: value };
-            case 'scale':
-                 return { transform: `translate(-50%, -50%) scale(${value})` };
-            case 'position':
-                return { transform: `translate(${value.x - 6}px, ${value.y - 6}px)` }; // 6 is half particle size
-            case 'cameraPosition':
-            case 'zoom':
-                return {};
-            default:
-                return {};
+        } finally {
+            renderBtn.disabled = false;
+            renderBtn.textContent = '🎬 Generate Video';
         }
     }
 </script>

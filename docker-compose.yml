@@ -9,6 +9,8 @@ services:
       - "8080:8080"
     env_file:
       - explainor.env
+    environment:
+      - RENDERER_URL=http://renderer:3030
     depends_on:
       - renderer
 

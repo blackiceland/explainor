@@ -5,8 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "start": "ts-node src/server.ts",
-    "dev": "nodemon src/server.ts",
-    "build": "remotion render src/index.tsx Main out.mp4"
+    "dev": "nodemon src/server.ts"
   },
   "dependencies": {
     "@heroicons/react": "^2.1.3",

@@ -22,6 +22,10 @@ public record AnimationSegment(
         return new AnimationSegment(startTime, endTime, "scale", 0.0, 1.0, easing);
     }
 
+    public static AnimationSegment scale(double startTime, double endTime, String easing, double from, double to) {
+        return new AnimationSegment(startTime, endTime, "scale", from, to, easing);
+    }
+
     public static AnimationSegment position(double startTime, double endTime, String easing, 
                                            double fromX, double fromY, double toX, double toY) {
         return new AnimationSegment(

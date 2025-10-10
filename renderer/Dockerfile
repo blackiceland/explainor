@@ -19,8 +19,6 @@ RUN --mount=type=cache,target=/root/.npm \
 
 COPY . .
 
-RUN npm run build
-
 EXPOSE 3030
 
 CMD [ "npm", "start" ]

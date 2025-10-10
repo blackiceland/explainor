@@ -1,6 +1,6 @@
 package com.dev.explainor.genesis.renderer;
 
-import com.dev.explainor.genesis.renderer.domain.FinalTimeline;
+import com.dev.explainor.genesis.dto.FinalTimelineV1;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,14 +21,7 @@ public class RendererClient {
         this.webClient = webClient;
     }
 
-    /**
-     * Sends a timeline to the Remotion renderer service for video generation.
-     *
-     * @param timeline the complete animation timeline
-     * @return Mono containing the render response with video URL
-     * @throws RuntimeException if the renderer service returns an error
-     */
-    public Mono<JsonNode> renderVideo(FinalTimeline timeline) {
+    public Mono<JsonNode> renderVideo(FinalTimelineV1 timeline) {
         return this.webClient.post()
                 .uri("/render")
                 .bodyValue(timeline)

@@ -47,31 +47,29 @@ public class TimelineFactory {
 
     private List<TimelineEdge> convertToEdges(List<RoutedEdge> routedEdges) {
         return routedEdges.stream()
-            .map(routedEdge -> new TimelineEdge(
-                routedEdge.id(),
-                routedEdge.from(),
-                routedEdge.to(),
-                routedEdge.label(),
-                routedEdge.path(),
-                EdgeStyle.defaultEdgeStyle(),
-                calculatePathLength(routedEdge.path())
-            ))
+            .map(routedEdge -> {
+                EdgeStyle baseStyle = EdgeStyle.defaultEdgeStyle();
+                String lineStyle = routedEdge.lineStyle() != null ? routedEdge.lineStyle() : baseStyle.lineStyle();
+                
+                EdgeStyle customStyle = new EdgeStyle(
+                    baseStyle.strokeColor(),
+                    baseStyle.strokeWidth(),
+                    lineStyle,
+                    baseStyle.arrowStyle(),
+                    baseStyle.shadow(),
+                    baseStyle.labelStyle()
+                );
+                
+                return new TimelineEdge(
+                    routedEdge.id(),
+                    routedEdge.from(),
+                    routedEdge.to(),
+                    routedEdge.label(),
+                    routedEdge.path(),
+                    customStyle,
+                    routedEdge.pathLength()
+                );
+            })
             .toList();
-    }
-    
-    private double calculatePathLength(List<com.dev.explainor.genesis.domain.Point> path) {
-        if (path.isEmpty()) {
-            return 0.0;
-        }
-        
-        double length = 0.0;
-        for (int i = 0; i < path.size() - 1; i++) {
-            com.dev.explainor.genesis.domain.Point p1 = path.get(i);
-            com.dev.explainor.genesis.domain.Point p2 = path.get(i + 1);
-            double dx = p2.x() - p1.x();
-            double dy = p2.y() - p1.y();
-            length += Math.sqrt(dx * dx + dy * dy);
-        }
-        return length;
     }
 }

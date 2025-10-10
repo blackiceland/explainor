@@ -15,9 +15,9 @@ import java.util.List;
 public class CameraOrchestrator {
     
     private static final Logger log = LoggerFactory.getLogger(CameraOrchestrator.class);
-    private static final Double DEFAULT_CAMERA_X = 640.0;
-    private static final Double DEFAULT_CAMERA_Y = 360.0;
-    private static final Double DEFAULT_ZOOM = 1.5;
+    private static final double DEFAULT_CANVAS_WIDTH = 1280.0;
+    private static final double DEFAULT_CANVAS_HEIGHT = 720.0;
+    private static final double DEFAULT_ZOOM = 1.5;
     
     private final ViewportCalculator viewportCalculator;
     
@@ -38,10 +38,10 @@ public class CameraOrchestrator {
             return AnimationTrack.cameraTrack(List.of()); // Return an empty camera track
         }
         
-        Double finalZoom = zoomLevel != null ? zoomLevel : DEFAULT_ZOOM;
+        double finalZoom = zoomLevel != null ? zoomLevel : DEFAULT_ZOOM;
         Viewport idealViewport = viewportCalculator.calculateFocus(targetNode);
         
-        Viewport standardViewport = Viewport.standard(DEFAULT_CAMERA_X, DEFAULT_CAMERA_Y);
+        Viewport standardViewport = Viewport.standard(DEFAULT_CANVAS_WIDTH, DEFAULT_CANVAS_HEIGHT);
         
         double endTime = startTime + duration;
         List<AnimationSegment> segments = new ArrayList<>();
@@ -60,11 +60,11 @@ public class CameraOrchestrator {
             startTime,
             endTime,
             "easeInOutQuad",
-            1.0,
+            standardViewport.zoom(),
             finalZoom
         ));
         
-        log.info("Created focus track for '{}' at ({:.1f}, {:.1f}) with zoom {:.1f}",
+        log.info("Created focus track for '{}' at ({}, {}) with zoom {}",
             targetId, targetNode.x(), targetNode.y(), finalZoom);
         
         return AnimationTrack.cameraTrack(segments);

@@ -28,5 +28,9 @@ public record AnimationTrack(
     public static AnimationTrack cameraTrack(List<AnimationSegment> segments) {
         return new AnimationTrack("track-camera-main", "camera", "main-camera", segments);
     }
+
+    public static AnimationTrack arrowTrack(String edgeId, List<AnimationSegment> segments) {
+        return new AnimationTrack("track-arrow-" + edgeId, "arrow", edgeId, segments);
+    }
 }
 

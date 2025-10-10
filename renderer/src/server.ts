@@ -33,7 +33,8 @@ async function ensureBundle() {
 app.post('/render', async (req, res) => {
     try {
         console.log('=== Render request received ===');
-        const props = req.body;
+        const timeline = req.body;
+        const props = { timeline };
         
         console.log('Step 1: Ensuring bundle is ready...');
         const serveUrl = await ensureBundle();

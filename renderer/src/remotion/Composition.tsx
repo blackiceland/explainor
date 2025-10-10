@@ -1,7 +1,8 @@
 import React from 'react';
-import { AbsoluteFill, useCurrentFrame, interpolate, Easing } from 'remotion';
+import { AbsoluteFill, useCurrentFrame, interpolate } from 'remotion';
 import { AnimatedNode } from '../components/AnimatedNode';
 import { AnimatedEdge } from '../components/AnimatedEdge';
+import { AnimatedArrow } from '../components/AnimatedArrow';
 
 interface FinalTimeline {
   version: string;
@@ -74,12 +75,24 @@ export const Composition: React.FC<{ timeline: FinalTimeline }> = ({ timeline })
   const fps = 30;
   const currentTime = frame / fps;
 
-  const getAnimationValue = (targetId: string, property: string): number => {
-    const track = timeline.tracks.find(t => t.targetId === targetId);
+  const getAnimationValue = (targetId: string, property: string, type?: string): number => {
+    const track = timeline.tracks.find(t => 
+      t.targetId === targetId && (!type || t.type === type)
+    );
     if (!track) return property === 'opacity' ? 1 : 1;
 
-    const segment = track.segments.find(s => s.property === property);
-    if (!segment) return property === 'opacity' ? 1 : 1;
+    const segments = track.segments.filter(s => s.property === property);
+    if (segments.length === 0) return property === 'opacity' ? 1 : 1;
+
+    const segment = segments.find(s => currentTime >= s.t0 && currentTime <= s.t1);
+    
+    if (!segment) {
+      const lastSegment = segments[segments.length - 1];
+      if (currentTime > lastSegment.t1) {
+        return Number(lastSegment.to);
+      }
+      return Number(segments[0].from);
+    }
 
     if (currentTime < segment.t0) {
       return Number(segment.from);
@@ -88,9 +101,23 @@ export const Composition: React.FC<{ timeline: FinalTimeline }> = ({ timeline })
       return Number(segment.to);
     }
 
-    const easingMap: Record<string, Easing> = {
-      easeInOutQuint: Easing.inOut(Easing.ease),
-      easeInOutCubic: Easing.bezier(0.65, 0, 0.35, 1),
+    const easingMap: Record<string, (t: number) => number> = {
+      easeInOutQuint: (t: number) => {
+        return t < 0.5
+          ? 16 * t * t * t * t * t
+          : 1 - Math.pow(-2 * t + 2, 5) / 2;
+      },
+      easeInOutCubic: (t: number) => {
+        return t < 0.5
+          ? 4 * t * t * t
+          : 1 - Math.pow(-2 * t + 2, 3) / 2;
+      },
+      easeInOutQuad: (t: number) => {
+        return t < 0.5
+          ? 2 * t * t
+          : 1 - Math.pow(-2 * t + 2, 2) / 2;
+      },
+      linear: (t: number) => t,
     };
 
     const progress = interpolate(
@@ -100,7 +127,7 @@ export const Composition: React.FC<{ timeline: FinalTimeline }> = ({ timeline })
       {
         extrapolateLeft: 'clamp',
         extrapolateRight: 'clamp',
-        easing: easingMap[segment.easing] || Easing.inOut(Easing.ease),
+        easing: easingMap[segment.easing] || easingMap.easeInOutQuint,
       }
     );
 
@@ -138,6 +165,18 @@ export const Composition: React.FC<{ timeline: FinalTimeline }> = ({ timeline })
               key={edge.id}
               edge={edge}
               opacity={opacity}
+            />
+          );
+        })}
+
+        {timeline.edges.map((edge) => {
+          const edgeId = `${edge.from}-${edge.to}`;
+          const arrowOpacity = getAnimationValue(edgeId, 'opacity', 'arrow');
+          return (
+            <AnimatedArrow
+              key={`arrow-${edge.id}`}
+              edge={edge}
+              opacity={arrowOpacity}
             />
           );
         })}
