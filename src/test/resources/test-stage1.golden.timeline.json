@@ -129,15 +129,15 @@
     "type" : "node",
     "targetId" : "server",
     "segments" : [ {
-      "t0" : 1.1,
-      "t1" : 2.1,
+      "t0" : 1.15,
+      "t1" : 2.15,
       "property" : "opacity",
       "from" : 0.0,
       "to" : 1.0,
       "easing" : "easeInOutQuint"
     }, {
-      "t0" : 1.1,
-      "t1" : 2.1,
+      "t0" : 1.15,
+      "t1" : 2.15,
       "property" : "scale",
       "from" : 0.0,
       "to" : 1.0,
@@ -148,8 +148,8 @@
     "type" : "edge",
     "targetId" : "client-server",
     "segments" : [ {
-      "t0" : 2.2,
-      "t1" : 3.7,
+      "t0" : 2.3,
+      "t1" : 3.8,
       "property" : "opacity",
       "from" : 0.0,
       "to" : 1.0,

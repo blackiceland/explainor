@@ -58,27 +58,27 @@ public class BehaviorFactory {
         fullPath.add(start);
         fullPath.addAll(edge.path());
         fullPath.add(end);
-        
-        Double pathLength = calculatePathLength(fullPath);
-        Double speed = params.speed() != null ? params.speed() : DEFAULT_FLOW_SPEED;
-        Double duration = pathLength / speed;
-        Double endTime = startTime + duration;
+
+        double pathLength = calculatePathLength(fullPath);
+        double speed = params.speed() != null ? params.speed() : DEFAULT_FLOW_SPEED;
+        double duration = pathLength / speed;
+        double endTime = startTime + duration;
         
         List<AnimationSegment> segments = new ArrayList<>();
         
-        segments.add(AnimationSegment.opacity(startTime, startTime + 0.1, "easeInOutQuad"));
-        
-        Double currentTime = startTime;
+        segments.add(AnimationSegment.opacity(startTime, startTime + 0.2, "easeInOutQuint"));
+
+        double currentTime = startTime;
         for (int i = 0; i < fullPath.size() - 1; i++) {
             Point from = fullPath.get(i);
             Point to = fullPath.get(i + 1);
-            Double segmentLength = distance(from, to);
-            Double segmentDuration = (segmentLength / pathLength) * duration;
+            double segmentLength = distance(from, to);
+            double segmentDuration = (segmentLength / pathLength) * duration;
             
             segments.add(AnimationSegment.position(
                 currentTime,
                 currentTime + segmentDuration,
-                "easeInOutQuad",
+                "easeInOutQuint",
                 from.x(),
                 from.y(),
                 to.x(),
@@ -88,20 +88,21 @@ public class BehaviorFactory {
             currentTime += segmentDuration;
         }
         
-        segments.add(AnimationSegment.opacity(endTime - 0.1, endTime, "easeInOutQuad"));
+        segments.add(AnimationSegment.opacity(endTime - 0.2, endTime, "easeInOutQuint"));
         
         String particleId = "particle-" + commandId;
         AnimationTrack track = AnimationTrack.particleTrack(particleId, segments);
         
-        log.info("Created flow behavior: {} segments over {:.2f}s from ({:.1f},{:.1f}) to ({:.1f},{:.1f})", 
+        log.info("Created flow behavior: {} segments over {}s from ({},{}) to ({},{})",
             segments.size(), duration, start.x(), start.y(), end.x(), end.y());
+
         return List.of(track);
     }
     
     private List<AnimationTrack> createOrbitBehavior(
             AnimateBehaviorParams params,
             String commandId,
-            Double startTime,
+            double startTime,
             List<PositionedNode> nodes) {
         
         PositionedNode centerNode = findNode(params.from(), nodes);
@@ -109,30 +110,30 @@ public class BehaviorFactory {
             log.warn("Center node not found for orbit: {}", params.from());
             return List.of();
         }
-        
-        Double duration = params.duration() != null ? params.duration() : DEFAULT_ORBIT_DURATION;
-        Double endTime = startTime + duration;
-        Double centerX = centerNode.x();
-        Double centerY = centerNode.y();
-        Double radius = 80.0;
+
+        double duration = params.duration() != null ? params.duration() : DEFAULT_ORBIT_DURATION;
+        double endTime = startTime + duration;
+        double centerX = centerNode.x();
+        double centerY = centerNode.y();
+        double radius = 80.0;
         
         int steps = 60;
         List<AnimationSegment> segments = new ArrayList<>();
         
-        segments.add(AnimationSegment.opacity(startTime, startTime + 0.2, "easeInOutQuad"));
+        segments.add(AnimationSegment.opacity(startTime, startTime + 0.2, "easeInOutQuint"));
         
         for (int i = 0; i < steps; i++) {
-            Double angle1 = (2 * Math.PI * i) / steps;
-            Double angle2 = (2 * Math.PI * (i + 1)) / steps;
-            
-            Double x1 = centerX + radius * Math.cos(angle1);
-            Double y1 = centerY + radius * Math.sin(angle1);
-            Double x2 = centerX + radius * Math.cos(angle2);
-            Double y2 = centerY + radius * Math.sin(angle2);
-            
-            Double segmentStart = startTime + (i * duration / steps);
-            Double segmentEnd = startTime + ((i + 1) * duration / steps);
-            
+            double angle1 = (2 * Math.PI * i) / steps;
+            double angle2 = (2 * Math.PI * (i + 1)) / steps;
+
+            double x1 = centerX + radius * Math.cos(angle1);
+            double y1 = centerY + radius * Math.sin(angle1);
+            double x2 = centerX + radius * Math.cos(angle2);
+            double y2 = centerY + radius * Math.sin(angle2);
+
+            double segmentStart = startTime + (i * duration / steps);
+            double segmentEnd = startTime + ((i + 1) * duration / steps);
+
             segments.add(AnimationSegment.position(
                 segmentStart,
                 segmentEnd,
@@ -144,12 +145,12 @@ public class BehaviorFactory {
             ));
         }
         
-        segments.add(AnimationSegment.opacity(endTime - 0.2, endTime, "easeInOutQuad"));
+        segments.add(AnimationSegment.opacity(endTime - 0.2, endTime, "easeInOutQuint"));
         
         String particleId = "particle-" + commandId;
         AnimationTrack track = AnimationTrack.particleTrack(particleId, segments);
         
-        log.info("Created orbit behavior: {} segments over {:.2f}s", segments.size(), duration);
+        log.info("Created orbit behavior: {} segments over {}s", segments.size(), duration);
         return List.of(track);
     }
     
@@ -168,16 +169,17 @@ public class BehaviorFactory {
     }
     
     private Double calculatePathLength(List<Point> path) {
-        Double length = 0.0;
+        double length = 0.0;
         for (int i = 0; i < path.size() - 1; i++) {
             length += distance(path.get(i), path.get(i + 1));
         }
         return length;
     }
     
-    private Double distance(Point p1, Point p2) {
-        Double dx = p2.x() - p1.x();
-        Double dy = p2.y() - p1.y();
+    private double distance(Point p1, Point p2) {
+        double dx = p2.x() - p1.x();
+        double dy = p2.y() - p1.y();
+
         return Math.sqrt(dx * dx + dy * dy);
     }
 }

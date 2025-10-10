@@ -16,7 +16,7 @@ public class DefaultTimingProvider implements TimingProvider {
     private static final double CONNECT_ENTITIES_DURATION = 1.5;
     private static final double ANIMATE_BEHAVIOR_DURATION = 2.0;
     private static final double FOCUS_ON_DURATION = 1.5;
-    private static final double STAGGER_DELAY = 0.1;
+    private static final double STAGGER_DELAY = 0.15;
 
     @Override
     public TimingInfo calculateTiming(Command command, TimelineContext context) {

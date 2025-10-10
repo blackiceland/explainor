@@ -73,7 +73,7 @@ class DefaultTimingProviderTest {
         TimingInfo timing2 = provider.calculateTiming(command2, context);
 
         assertEquals(0.0, timing1.startTime());
-        assertEquals(0.1, timing2.startTime());
+        assertEquals(0.15, timing2.startTime());
     }
 
     @Test
