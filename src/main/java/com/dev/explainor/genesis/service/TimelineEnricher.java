@@ -19,7 +19,6 @@ import java.util.List;
 public class TimelineEnricher {
     private static final Logger log = LoggerFactory.getLogger(TimelineEnricher.class);
     private static final Double FOCUS_DURATION = 1.5;
-    private static final Double FOCUS_ZOOM_LEVEL = 1.5;
     
     private final TimingProvider timingProvider;
     private final BehaviorFactory behaviorFactory;
@@ -62,7 +61,6 @@ public class TimelineEnricher {
                         focusCmd.params().target(),
                         timing.startTime(),
                         FOCUS_DURATION,
-                        FOCUS_ZOOM_LEVEL,
                         layoutResult.nodes()
                     ));
                     

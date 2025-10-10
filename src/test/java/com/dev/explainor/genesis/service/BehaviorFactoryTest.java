@@ -30,7 +30,8 @@ class BehaviorFactoryTest {
             new Point(200.0, 200.0)
         );
         
-        RoutedEdge edge = new RoutedEdge("edge1", "nodeA", "nodeB", null, path);
+        RoutedEdge edge = new RoutedEdge("edge1", "nodeA", "nodeB", null, path, 
+            new Point(100.0, 100.0), new Point(200.0, 200.0));
         List<RoutedEdge> edges = List.of(edge);
         
         AnimateBehaviorParams params = AnimateBehaviorParams.flow("nodeA", "nodeB");
@@ -58,7 +59,7 @@ class BehaviorFactoryTest {
 
     @Test
     void testCreateOrbitBehavior() {
-        PositionedNode centerNode = new PositionedNode("center", "Center", "⭕", 300.0, 300.0);
+        PositionedNode centerNode = new PositionedNode("center", "Center", "⭕", 300.0, 300.0, 100.0, 100.0);
         List<PositionedNode> nodes = List.of(centerNode);
         
         AnimateBehaviorParams params = AnimateBehaviorParams.orbit("center", 3.0);
@@ -120,7 +121,8 @@ class BehaviorFactoryTest {
             new Point(100.0, 0.0)
         );
         
-        RoutedEdge edge = new RoutedEdge("edge1", "nodeA", "nodeB", null, path);
+        RoutedEdge edge = new RoutedEdge("edge1", "nodeA", "nodeB", null, path, 
+            new Point(0.0, 0.0), new Point(100.0, 0.0));
         
         AnimateBehaviorParams params = new AnimateBehaviorParams("flow", "nodeA", "nodeB", null, 100.0);
         

@@ -1,7 +1,7 @@
 package com.dev.explainor.genesis.service;
 
 import com.dev.explainor.genesis.dto.*;
-import com.dev.explainor.genesis.layout.DummyLayoutManager;
+import com.dev.explainor.genesis.layout.GraphBasedLayoutManager;
 import com.dev.explainor.genesis.layout.OrthogonalPathFinder;
 import com.dev.explainor.genesis.config.LayoutProperties;
 import com.dev.explainor.genesis.validation.StoryboardValidator;
@@ -17,16 +17,18 @@ import static org.junit.jupiter.api.Assertions.*;
 class GenesisConductorServiceTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final LayoutProperties layoutProperties = new LayoutProperties();
+    private final ViewportCalculator viewportCalculator = new ViewportCalculator();
     private final GenesisConductorService service = new GenesisConductorService(
-        new DummyLayoutManager(),
-        new OrthogonalPathFinder(new LayoutProperties()),
+        new GraphBasedLayoutManager(layoutProperties),
+        new OrthogonalPathFinder(layoutProperties),
         new StoryboardValidator(),
         new LayoutModelFactory(),
         new TimelineFactory(),
         new TimelineEnricher(
             new com.dev.explainor.genesis.timing.DefaultTimingProvider(),
             new BehaviorFactory(),
-            new CameraOrchestrator()
+            new CameraOrchestrator(viewportCalculator)
         )
     );
 
@@ -57,29 +59,6 @@ class GenesisConductorServiceTest {
         assertEquals(timeline1.nodes().get(0).y(), timeline2.nodes().get(0).y());
         assertEquals(timeline1.nodes().get(1).x(), timeline2.nodes().get(1).x());
         assertEquals(timeline1.nodes().get(1).y(), timeline2.nodes().get(1).y());
-    }
-
-    @Test
-    void shouldValidateCoordinatesFromDummyLayoutManager() throws Exception {
-        String json = Files.readString(Paths.get("src/test/resources/test-stage1.storyboard.json"));
-        StoryboardV1 storyboard = objectMapper.readValue(json, StoryboardV1.class);
-
-        FinalTimelineV1 timeline = service.choreograph(storyboard);
-
-        TimelineNode clientNode = timeline.nodes().stream()
-            .filter(node -> "client".equals(node.id()))
-            .findFirst()
-            .orElseThrow();
-
-        TimelineNode serverNode = timeline.nodes().stream()
-            .filter(node -> "server".equals(node.id()))
-            .findFirst()
-            .orElseThrow();
-
-        assertEquals(-125.0, clientNode.x());
-        assertEquals(0.0, clientNode.y());
-        assertEquals(125.0, serverNode.x());
-        assertEquals(0.0, serverNode.y());
     }
 
     @Test

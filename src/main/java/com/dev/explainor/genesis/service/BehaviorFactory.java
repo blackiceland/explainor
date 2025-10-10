@@ -51,8 +51,15 @@ public class BehaviorFactory {
             return List.of();
         }
         
-        List<Point> path = edge.path();
-        Double pathLength = calculatePathLength(path);
+        Point start = edge.effectiveStart();
+        Point end = edge.effectiveEnd();
+        
+        List<Point> fullPath = new ArrayList<>();
+        fullPath.add(start);
+        fullPath.addAll(edge.path());
+        fullPath.add(end);
+        
+        Double pathLength = calculatePathLength(fullPath);
         Double speed = params.speed() != null ? params.speed() : DEFAULT_FLOW_SPEED;
         Double duration = pathLength / speed;
         Double endTime = startTime + duration;
@@ -61,12 +68,12 @@ public class BehaviorFactory {
         
         segments.add(AnimationSegment.opacity(startTime, startTime + 0.1, "easeInOutQuad"));
         
-        for (int i = 0; i < path.size() - 1; i++) {
-            Point from = path.get(i);
-            Point to = path.get(i + 1);
+        for (int i = 0; i < fullPath.size() - 1; i++) {
+            Point from = fullPath.get(i);
+            Point to = fullPath.get(i + 1);
             Double segmentLength = distance(from, to);
             Double segmentDuration = (segmentLength / pathLength) * duration;
-            Double segmentStart = startTime + (i * duration / (path.size() - 1));
+            Double segmentStart = startTime + (i * duration / (fullPath.size() - 1));
             Double segmentEnd = segmentStart + segmentDuration;
             
             segments.add(AnimationSegment.position(
@@ -85,7 +92,8 @@ public class BehaviorFactory {
         String particleId = "particle-" + commandId;
         AnimationTrack track = AnimationTrack.particleTrack(particleId, segments);
         
-        log.info("Created flow behavior: {} segments over {:.2f}s", segments.size(), duration);
+        log.info("Created flow behavior: {} segments over {:.2f}s from ({:.1f},{:.1f}) to ({:.1f},{:.1f})", 
+            segments.size(), duration, start.x(), start.y(), end.x(), end.y());
         return List.of(track);
     }
     

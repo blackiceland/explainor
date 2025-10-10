@@ -7,6 +7,8 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Primary;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -16,9 +18,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Component
+@Primary
 public class GraphBasedLayoutManager implements LayoutManager {
 
     private static final Logger log = LoggerFactory.getLogger(GraphBasedLayoutManager.class);
+    private static final double DEFAULT_NODE_WIDTH = 120.0;
+    private static final double DEFAULT_NODE_HEIGHT = 80.0;
 
     private final double layerSpacing;
     private final double nodeSpacing;
@@ -132,7 +138,15 @@ public class GraphBasedLayoutManager implements LayoutManager {
             double x = (order - (nodesInLevel - 1) / 2.0) * nodeSpacing;
             double y = level * layerSpacing;
 
-            positions.add(new PositionedNode(node.id(), node.label(), node.icon(), x, y));
+            positions.add(new PositionedNode(
+                node.id(), 
+                node.label(), 
+                node.icon(), 
+                x, 
+                y,
+                DEFAULT_NODE_WIDTH,
+                DEFAULT_NODE_HEIGHT
+            ));
         }
         return positions;
     }
@@ -158,7 +172,9 @@ public class GraphBasedLayoutManager implements LayoutManager {
             node.label(),
             node.icon(),
             node.x() + finalOffsetX,
-            node.y() + finalOffsetY
+            node.y() + finalOffsetY,
+            node.width(),
+            node.height()
         ));
     }
 

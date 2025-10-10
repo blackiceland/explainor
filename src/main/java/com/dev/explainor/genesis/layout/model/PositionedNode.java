@@ -5,6 +5,12 @@ public record PositionedNode(
     String label,
     String icon,
     double x,
-    double y
-) {}
+    double y,
+    double width,
+    double height
+) {
+    public BoundingBox boundingBox() {
+        return BoundingBox.fromCenter(x, y, width, height);
+    }
+}
 

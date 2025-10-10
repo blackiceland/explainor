@@ -6,6 +6,7 @@ import com.dev.explainor.genesis.layout.model.LayoutConstraints;
 import com.dev.explainor.genesis.layout.model.LayoutEdge;
 import com.dev.explainor.genesis.layout.model.PositionedNode;
 import com.dev.explainor.genesis.layout.model.RoutedEdge;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 
+@Component
 public class OrthogonalPathFinder implements PathFinder {
 
     private final double gridStep;
@@ -37,7 +39,13 @@ public class OrthogonalPathFinder implements PathFinder {
             PositionedNode from = find(nodes, edge.from());
             PositionedNode to = find(nodes, edge.to());
             List<Point> path = route(from, to, blocked);
-            result.add(new RoutedEdge(edge.id(), edge.from(), edge.to(), edge.label(), path));
+            
+            Point startAnchor = AnchorCalculator.calculateExitPoint(from, to.x() > from.x() ? 
+                new Point(to.x(), from.y()) : new Point(to.x(), to.y()));
+            Point endAnchor = AnchorCalculator.calculateEntryPoint(to, from.x() > to.x() ? 
+                new Point(from.x(), to.y()) : new Point(from.x(), from.y()));
+            
+            result.add(new RoutedEdge(edge.id(), edge.from(), edge.to(), edge.label(), path, startAnchor, endAnchor));
         }
         return result;
     }

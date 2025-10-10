@@ -2,7 +2,7 @@ package com.dev.explainor.genesis.service;
 
 import com.dev.explainor.genesis.dto.FinalTimelineV1;
 import com.dev.explainor.genesis.dto.StoryboardV1;
-import com.dev.explainor.genesis.layout.DummyLayoutManager;
+import com.dev.explainor.genesis.layout.GraphBasedLayoutManager;
 import com.dev.explainor.genesis.layout.OrthogonalPathFinder;
 import com.dev.explainor.genesis.config.LayoutProperties;
 import com.dev.explainor.genesis.validation.StoryboardValidator;
@@ -21,16 +21,18 @@ class GoldenTimelineTest {
     private final ObjectMapper objectMapper = new ObjectMapper()
         .enable(SerializationFeature.INDENT_OUTPUT);
     
+    private final LayoutProperties layoutProperties = new LayoutProperties();
+    private final ViewportCalculator viewportCalculator = new ViewportCalculator();
     private final GenesisConductorService service = new GenesisConductorService(
-        new DummyLayoutManager(),
-        new OrthogonalPathFinder(new LayoutProperties()),
+        new GraphBasedLayoutManager(layoutProperties),
+        new OrthogonalPathFinder(layoutProperties),
         new StoryboardValidator(),
         new LayoutModelFactory(),
         new TimelineFactory(),
         new TimelineEnricher(
             new com.dev.explainor.genesis.timing.DefaultTimingProvider(),
             new BehaviorFactory(),
-            new CameraOrchestrator()
+            new CameraOrchestrator(viewportCalculator)
         )
     );
 

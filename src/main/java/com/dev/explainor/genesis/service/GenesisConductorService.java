@@ -9,7 +9,6 @@ import com.dev.explainor.genesis.layout.model.*;
 import com.dev.explainor.genesis.validation.StoryboardValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,7 +27,7 @@ public class GenesisConductorService {
     private final TimelineEnricher timelineEnricher;
 
     public GenesisConductorService(
-            @Qualifier("genesisLayoutManager") LayoutManager layoutManager,
+            LayoutManager layoutManager,
             PathFinder pathFinder,
             StoryboardValidator validator,
             LayoutModelFactory layoutModelFactory,

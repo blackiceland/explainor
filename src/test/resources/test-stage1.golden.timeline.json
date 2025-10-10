@@ -8,8 +8,8 @@
     "id" : "client",
     "label" : "Client",
     "icon" : "laptop",
-    "x" : -125.0,
-    "y" : 0.0,
+    "x" : 640.0,
+    "y" : 280.0,
     "visualStyle" : {
       "width" : 120.0,
       "height" : 80.0,
@@ -36,8 +36,8 @@
     "id" : "server",
     "label" : "Server",
     "icon" : "server",
-    "x" : 125.0,
-    "y" : 0.0,
+    "x" : 640.0,
+    "y" : 440.0,
     "visualStyle" : {
       "width" : 120.0,
       "height" : 80.0,
@@ -67,11 +67,11 @@
     "to" : "server",
     "label" : "HTTP Request",
     "path" : [ {
-      "x" : -120.0,
-      "y" : 0.0
+      "x" : 640.0,
+      "y" : 280.0
     }, {
-      "x" : 120.0,
-      "y" : 0.0
+      "x" : 640.0,
+      "y" : 440.0
     } ],
     "edgeStyle" : {
       "strokeColor" : "#374151",

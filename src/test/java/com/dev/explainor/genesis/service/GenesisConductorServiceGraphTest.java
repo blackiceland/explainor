@@ -18,16 +18,18 @@ import static org.junit.jupiter.api.Assertions.*;
 class GenesisConductorServiceGraphTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+    private final LayoutProperties layoutProperties = new LayoutProperties();
+    private final ViewportCalculator viewportCalculator = new ViewportCalculator();
     private final GenesisConductorService service = new GenesisConductorService(
-        new GraphBasedLayoutManager(new LayoutProperties()),
-        new OrthogonalPathFinder(new LayoutProperties()),
+        new GraphBasedLayoutManager(layoutProperties),
+        new OrthogonalPathFinder(layoutProperties),
         new StoryboardValidator(),
         new LayoutModelFactory(),
         new TimelineFactory(),
         new TimelineEnricher(
             new com.dev.explainor.genesis.timing.DefaultTimingProvider(),
             new BehaviorFactory(),
-            new CameraOrchestrator()
+            new CameraOrchestrator(viewportCalculator)
         )
     );
 

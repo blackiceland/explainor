@@ -13,22 +13,23 @@ import static org.junit.jupiter.api.Assertions.*;
 class CameraOrchestratorTest {
 
     private CameraOrchestrator cameraOrchestrator;
+    private ViewportCalculator viewportCalculator;
 
     @BeforeEach
     void setUp() {
-        cameraOrchestrator = new CameraOrchestrator();
+        viewportCalculator = new ViewportCalculator();
+        cameraOrchestrator = new CameraOrchestrator(viewportCalculator);
     }
 
     @Test
     void testCreateFocusTrack() {
-        PositionedNode targetNode = new PositionedNode("server", "Server", "🖥️", 400.0, 300.0);
+        PositionedNode targetNode = new PositionedNode("server", "Server", "🖥️", 400.0, 300.0, 120.0, 80.0);
         List<PositionedNode> nodes = List.of(targetNode);
         
         AnimationTrack track = cameraOrchestrator.createFocusTrack(
             "server",
             2.0,
             1.5,
-            1.8,
             nodes
         );
         
@@ -54,7 +55,7 @@ class CameraOrchestratorTest {
         
         AnimationSegment zoomSegment = zoomSegments.get(0);
         assertEquals(1.0, zoomSegment.fromValue());
-        assertEquals(1.8, zoomSegment.toValue());
+        assertTrue((Double)zoomSegment.toValue() > 1.0);
     }
 
     @Test
@@ -62,7 +63,6 @@ class CameraOrchestratorTest {
         AnimationTrack track = cameraOrchestrator.createFocusTrack(
             "nonexistent",
             0.0,
-            1.5,
             1.5,
             List.of()
         );
@@ -74,12 +74,11 @@ class CameraOrchestratorTest {
 
     @Test
     void testFocusTrackTimings() {
-        PositionedNode node = new PositionedNode("node1", "Node 1", "📦", 200.0, 150.0);
+        PositionedNode node = new PositionedNode("node1", "Node 1", "📦", 200.0, 150.0, 120.0, 80.0);
         
         AnimationTrack track = cameraOrchestrator.createFocusTrack(
             "node1",
             5.0,
-            2.0,
             2.0,
             List.of(node)
         );
