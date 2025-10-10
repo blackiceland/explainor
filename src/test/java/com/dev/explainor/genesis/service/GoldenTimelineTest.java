@@ -27,7 +27,11 @@ class GoldenTimelineTest {
         new StoryboardValidator(),
         new LayoutModelFactory(),
         new TimelineFactory(),
-        new TimelineEnricher(new com.dev.explainor.genesis.timing.DefaultTimingProvider())
+        new TimelineEnricher(
+            new com.dev.explainor.genesis.timing.DefaultTimingProvider(),
+            new BehaviorFactory(),
+            new CameraOrchestrator()
+        )
     );
 
     @Test

@@ -1,0 +1,112 @@
+{
+  "version": "1.0.0",
+  "commands": [
+    {
+      "type": "create_entity",
+      "id": "client",
+      "params": {
+        "label": "Client",
+        "icon": "💻"
+      }
+    },
+    {
+      "type": "create_entity",
+      "id": "server",
+      "params": {
+        "label": "Server",
+        "icon": "🖥️"
+      }
+    },
+    {
+      "type": "create_entity",
+      "id": "database",
+      "params": {
+        "label": "Database",
+        "icon": "🗄️"
+      }
+    },
+    {
+      "type": "pause",
+      "id": "pause1",
+      "params": {
+        "duration": 0.5
+      }
+    },
+    {
+      "type": "connect_entities",
+      "id": "request",
+      "params": {
+        "from": "client",
+        "to": "server",
+        "label": "HTTP Request"
+      }
+    },
+    {
+      "type": "connect_entities",
+      "id": "query",
+      "params": {
+        "from": "server",
+        "to": "database",
+        "label": "SQL Query"
+      }
+    },
+    {
+      "type": "pause",
+      "id": "pause2",
+      "params": {
+        "duration": 0.3
+      }
+    },
+    {
+      "type": "animate_behavior",
+      "id": "flow1",
+      "params": {
+        "behavior": "flow",
+        "from": "client",
+        "to": "server",
+        "speed": 180.0
+      }
+    },
+    {
+      "type": "animate_behavior",
+      "id": "flow2",
+      "params": {
+        "behavior": "flow",
+        "from": "server",
+        "to": "database",
+        "speed": 200.0
+      }
+    },
+    {
+      "type": "pause",
+      "id": "pause3",
+      "params": {
+        "duration": 0.5
+      }
+    },
+    {
+      "type": "focus_on",
+      "id": "focus1",
+      "params": {
+        "target": "server"
+      }
+    },
+    {
+      "type": "pause",
+      "id": "pause4",
+      "params": {
+        "duration": 0.5
+      }
+    },
+    {
+      "type": "animate_behavior",
+      "id": "orbit1",
+      "params": {
+        "behavior": "orbit",
+        "from": "server",
+        "duration": 2.5
+      }
+    }
+  ]
+}
+

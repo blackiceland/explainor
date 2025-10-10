@@ -65,7 +65,7 @@ public class GenesisConductorService {
         List<RoutedEdge> routedEdges = pathFinder.routeEdges(layoutEdges, positionedNodes, constraints);
         LayoutResult layoutResult = new LayoutResult(positionedNodes, routedEdges);
 
-        List<AnimationTrack> animationTracks = timelineEnricher.enrichWithAnimations(storyboard);
+        List<AnimationTrack> animationTracks = timelineEnricher.enrichWithAnimations(storyboard, layoutResult);
 
         log.info("Generated timeline with {} nodes, {} edges and {} animation tracks", 
             layoutResult.nodes().size(), layoutResult.edges().size(), animationTracks.size());

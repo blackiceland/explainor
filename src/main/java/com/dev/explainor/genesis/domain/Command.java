@@ -8,9 +8,10 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     @JsonSubTypes.Type(value = CreateEntityCommand.class, name = "create_entity"),
     @JsonSubTypes.Type(value = ConnectEntitiesCommand.class, name = "connect_entities"),
     @JsonSubTypes.Type(value = PauseCommand.class, name = "pause"),
-    @JsonSubTypes.Type(value = FocusOnCommand.class, name = "focus_on")
+    @JsonSubTypes.Type(value = FocusOnCommand.class, name = "focus_on"),
+    @JsonSubTypes.Type(value = AnimateBehaviorCommand.class, name = "animate_behavior")
 })
-public sealed interface Command permits CreateEntityCommand, ConnectEntitiesCommand, PauseCommand, FocusOnCommand {
+public sealed interface Command permits CreateEntityCommand, ConnectEntitiesCommand, PauseCommand, FocusOnCommand, AnimateBehaviorCommand {
     String id();
 }
 

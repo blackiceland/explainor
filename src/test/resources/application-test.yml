@@ -1,0 +1,18 @@
+spring:
+  application:
+    name: explainor-test
+
+renderer:
+  url: http://localhost:3030
+
+anthropic:
+  api:
+    key: test-api-key-dummy
+
+layout:
+  algorithm: graph
+  graph:
+    layer-spacing: 160.0
+    node-spacing: 220.0
+    grid-step: 40.0
+

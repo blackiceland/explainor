@@ -1,8 +1,10 @@
 package com.dev.explainor.genesis.timing;
 
+import com.dev.explainor.genesis.domain.AnimateBehaviorCommand;
 import com.dev.explainor.genesis.domain.Command;
 import com.dev.explainor.genesis.domain.ConnectEntitiesCommand;
 import com.dev.explainor.genesis.domain.CreateEntityCommand;
+import com.dev.explainor.genesis.domain.FocusOnCommand;
 import com.dev.explainor.genesis.domain.PauseCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +14,8 @@ public class DefaultTimingProvider implements TimingProvider {
     
     private static final double CREATE_ENTITY_DURATION = 1.0;
     private static final double CONNECT_ENTITIES_DURATION = 1.5;
+    private static final double ANIMATE_BEHAVIOR_DURATION = 2.0;
+    private static final double FOCUS_ON_DURATION = 1.5;
     private static final double STAGGER_DELAY = 0.1;
 
     @Override
@@ -36,6 +40,11 @@ public class DefaultTimingProvider implements TimingProvider {
             return CONNECT_ENTITIES_DURATION;
         } else if (command instanceof PauseCommand pauseCommand) {
             return pauseCommand.params().duration();
+        } else if (command instanceof AnimateBehaviorCommand behaviorCommand) {
+            Double customDuration = behaviorCommand.params().duration();
+            return customDuration != null ? customDuration : ANIMATE_BEHAVIOR_DURATION;
+        } else if (command instanceof FocusOnCommand) {
+            return FOCUS_ON_DURATION;
         }
         return 1.0;
     }

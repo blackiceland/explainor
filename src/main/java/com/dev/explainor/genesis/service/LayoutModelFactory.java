@@ -1,5 +1,6 @@
 package com.dev.explainor.genesis.service;
 
+import com.dev.explainor.genesis.domain.AnimateBehaviorCommand;
 import com.dev.explainor.genesis.domain.Command;
 import com.dev.explainor.genesis.domain.ConnectEntitiesCommand;
 import com.dev.explainor.genesis.domain.CreateEntityCommand;
@@ -37,6 +38,8 @@ public class LayoutModelFactory {
                 case PauseCommand pauseCmd -> {
                 }
                 case FocusOnCommand focusCmd -> {
+                }
+                case AnimateBehaviorCommand behaviorCmd -> {
                 }
             }
         }

@@ -22,8 +22,39 @@ public record AnimationSegment(
         return new AnimationSegment(startTime, endTime, "scale", 0.0, 1.0, easing);
     }
 
+    public static AnimationSegment position(double startTime, double endTime, String easing, 
+                                           double fromX, double fromY, double toX, double toY) {
+        return new AnimationSegment(
+            startTime, 
+            endTime, 
+            "position", 
+            new PositionValue(fromX, fromY), 
+            new PositionValue(toX, toY), 
+            easing
+        );
+    }
+
+    public static AnimationSegment cameraPosition(double startTime, double endTime, String easing,
+                                                  double fromX, double fromY, double toX, double toY) {
+        return new AnimationSegment(
+            startTime,
+            endTime,
+            "cameraPosition",
+            new PositionValue(fromX, fromY),
+            new PositionValue(toX, toY),
+            easing
+        );
+    }
+
+    public static AnimationSegment zoom(double startTime, double endTime, String easing, double from, double to) {
+        return new AnimationSegment(startTime, endTime, "zoom", from, to, easing);
+    }
+
     public double duration() {
         return endTime - startTime;
+    }
+
+    public record PositionValue(double x, double y) {
     }
 }
 

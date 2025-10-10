@@ -20,5 +20,13 @@ public record AnimationTrack(
     public static AnimationTrack edgeTrack(String targetId, List<AnimationSegment> segments) {
         return new AnimationTrack("track-edge-" + targetId, "edge", targetId, segments);
     }
+
+    public static AnimationTrack particleTrack(String targetId, List<AnimationSegment> segments) {
+        return new AnimationTrack("track-particle-" + targetId, "particle", targetId, segments);
+    }
+
+    public static AnimationTrack cameraTrack(List<AnimationSegment> segments) {
+        return new AnimationTrack("track-camera-main", "camera", "main-camera", segments);
+    }
 }
 

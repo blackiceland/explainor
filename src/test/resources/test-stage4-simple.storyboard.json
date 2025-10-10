@@ -1,0 +1,40 @@
+{
+  "version": "1.0.0",
+  "commands": [
+    {
+      "type": "create_entity",
+      "id": "nodeA",
+      "params": {
+        "label": "Node A",
+        "icon": "🔵"
+      }
+    },
+    {
+      "type": "create_entity",
+      "id": "nodeB",
+      "params": {
+        "label": "Node B",
+        "icon": "🟢"
+      }
+    },
+    {
+      "type": "connect_entities",
+      "id": "edge1",
+      "params": {
+        "from": "nodeA",
+        "to": "nodeB",
+        "label": "Connection"
+      }
+    },
+    {
+      "type": "animate_behavior",
+      "id": "flow1",
+      "params": {
+        "behavior": "flow",
+        "from": "nodeA",
+        "to": "nodeB"
+      }
+    }
+  ]
+}
+

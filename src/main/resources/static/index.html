@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Explainor - Stage 3: "First Breath"</title>
+    <title>Explainor - Stage 4: "Choreography"</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -118,6 +118,16 @@
             transform: translate(-50%, -50%);
             transition: all 0.3s ease;
         }
+        .particle {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: radial-gradient(circle, #3b82f6 0%, #1e40af 100%);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.8), 0 0 20px rgba(59, 130, 246, 0.4);
+            pointer-events: none;
+        }
         .edge-container {
             position: absolute;
             top: 0;
@@ -166,8 +176,8 @@
 </head>
 <body>
 
-<h1>🎬 Explainor - Stage 3: "First Breath"</h1>
-<p class="subtitle">Проверка анимационных треков и временной шкалы</p>
+<h1>🎬 Explainor - Stage 4: "Choreography"</h1>
+<p class="subtitle">Проверка продвинутой динамики: flow, orbit и camera</p>
 
 <div id="container">
     <div id="controls">
@@ -198,15 +208,21 @@
     const sampleStoryboard = {
         "version": "1.0.0",
         "commands": [
-            { "type": "create_entity", "id": "client", "params": { "label": "Client", "icon": "laptop" } },
-            { "type": "create_entity", "id": "server", "params": { "label": "Server", "icon": "server" } },
-            { "type": "connect_entities", "id": "request", "params": { "from": "client", "to": "server", "label": "HTTP Request" } }
+            { "type": "create_entity", "id": "client", "params": { "label": "Client", "icon": "💻" } },
+            { "type": "create_entity", "id": "server", "params": { "label": "Server", "icon": "🖥️" } },
+            { "type": "connect_entities", "id": "request", "params": { "from": "client", "to": "server", "label": "HTTP Request" } },
+            { "type": "animate_behavior", "id": "flow1", "params": { "behavior": "flow", "from": "client", "to": "server" } },
+            { "type": "focus_on", "id": "focus1", "params": { "target": "server" } }
         ]
     };
 
     document.getElementById('storyboard-input').value = JSON.stringify(sampleStoryboard, null, 2);
 
     let currentTimeline = null;
+    let animationState = {
+        camera: { x: 640, y: 360, zoom: 1 },
+        startTime: null
+    };
 
     document.getElementById('submit-btn').addEventListener('click', async () => {
         await choreographAndAnimate();
@@ -258,13 +274,15 @@
         const timelineInfo = document.getElementById('timeline-info');
         
         const trackCount = timeline.tracks ? timeline.tracks.length : 0;
+        const particleCount = timeline.tracks ? timeline.tracks.filter(t => t.type === 'particle').length : 0;
+        const cameraCount = timeline.tracks ? timeline.tracks.filter(t => t.type === 'camera').length : 0;
         const maxTime = timeline.tracks ? Math.max(...timeline.tracks.flatMap(t => 
             t.segments.map(s => s.t1)
         )) : 0;
         
         infoOutput.innerHTML = `
             ✅ Timeline generated successfully!<br>
-            📊 Nodes: ${timeline.nodes.length} | Edges: ${timeline.edges.length} | Animation Tracks: ${trackCount}
+            📊 Nodes: ${timeline.nodes.length} | Edges: ${timeline.edges.length} | Tracks: ${trackCount} (🎯 ${particleCount} particles, 🎥 ${cameraCount} camera)
         `;
         infoOutput.style.display = 'block';
         
@@ -278,6 +296,11 @@
     function renderAnimatedTimeline(timeline) {
         const canvas = document.getElementById('canvas');
         canvas.innerHTML = '';
+        
+        animationState = {
+            camera: { x: 640, y: 360, zoom: 1 },
+            startTime: null
+        };
 
         const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         svg.setAttribute('width', timeline.stage.width);
@@ -296,6 +319,16 @@
         timeline.nodes.forEach(node => {
             renderNode(node, canvas, timeline.tracks);
         });
+        
+        const particleTracks = timeline.tracks.filter(t => t.type === 'particle');
+        particleTracks.forEach(track => {
+            renderParticle(track, canvas);
+        });
+        
+        const cameraTracks = timeline.tracks.filter(t => t.type === 'camera');
+        if (cameraTracks.length > 0) {
+            animateCamera(cameraTracks[0], canvas);
+        }
     }
 
     function renderNode(node, canvas, tracks) {
@@ -425,6 +458,82 @@
             
             svg.appendChild(labelG);
         }
+    }
+
+    function renderParticle(track, canvas) {
+        const particleEl = document.createElement('div');
+        particleEl.className = 'particle';
+        particleEl.style.opacity = '0';
+        
+        const positionSegments = track.segments.filter(s => s.property === 'position');
+        const opacitySegments = track.segments.filter(s => s.property === 'opacity');
+        
+        if (positionSegments.length === 0) return;
+        
+        const firstPos = positionSegments[0].from;
+        particleEl.style.left = `${firstPos.x}px`;
+        particleEl.style.top = `${firstPos.y}px`;
+        
+        canvas.appendChild(particleEl);
+        
+        animateParticle(particleEl, track.segments);
+    }
+
+    function animateParticle(element, segments) {
+        segments.forEach(segment => {
+            const delay = segment.t0 * 1000;
+            const duration = (segment.t1 - segment.t0) * 1000;
+            
+            setTimeout(() => {
+                if (segment.property === 'position') {
+                    element.style.transition = `left ${duration}ms ${getEasingFunction(segment.easing)}, top ${duration}ms ${getEasingFunction(segment.easing)}`;
+                    element.style.left = `${segment.to.x}px`;
+                    element.style.top = `${segment.to.y}px`;
+                } else if (segment.property === 'opacity') {
+                    element.style.transition = `opacity ${duration}ms ${getEasingFunction(segment.easing)}`;
+                    element.style.opacity = segment.to;
+                }
+            }, delay);
+        });
+    }
+
+    function animateCamera(cameraTrack, canvas) {
+        const segments = cameraTrack.segments;
+        
+        segments.forEach(segment => {
+            const delay = segment.t0 * 1000;
+            const duration = (segment.t1 - segment.t0) * 1000;
+            
+            setTimeout(() => {
+                if (segment.property === 'cameraPosition') {
+                    const targetX = segment.to.x;
+                    const targetY = segment.to.y;
+                    
+                    canvas.style.transition = `transform ${duration}ms ${getEasingFunction(segment.easing)}`;
+                    
+                    const offsetX = 640 - targetX;
+                    const offsetY = 360 - targetY;
+                    const currentZoom = animationState.camera.zoom;
+                    
+                    canvas.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${currentZoom})`;
+                    
+                    animationState.camera.x = targetX;
+                    animationState.camera.y = targetY;
+                    
+                } else if (segment.property === 'zoom') {
+                    const targetZoom = segment.to;
+                    
+                    canvas.style.transition = `transform ${duration}ms ${getEasingFunction(segment.easing)}`;
+                    
+                    const offsetX = 640 - animationState.camera.x;
+                    const offsetY = 360 - animationState.camera.y;
+                    
+                    canvas.style.transform = `translate(${offsetX}px, ${offsetY}px) scale(${targetZoom})`;
+                    
+                    animationState.camera.zoom = targetZoom;
+                }
+            }, delay);
+        });
     }
 
     function getEasingFunction(easing) {
