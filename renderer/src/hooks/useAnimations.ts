@@ -19,16 +19,30 @@ const easingFromSegment = (easing: string) => {
 
 const calculateTransform = (latestValue: Record<string, any>) => {
   let transform = '';
-  if (latestValue.position) {
-    transform += `translateX(${latestValue.position.x - 6}px) translateY(${latestValue.position.y - 6}px) `;
+  const position = latestValue.position;
+  if (isPositionValue(position)) {
+    transform += `translateX(${position.x - 6}px) translateY(${position.y - 6}px) `;
   }
-  if (latestValue.scale) {
-    transform += `scale(${latestValue.scale}) `;
+  const scale = latestValue.scale;
+  if (typeof scale === 'number') {
+    transform += `scale(${scale}) `;
   }
-  if (latestValue.zoom) {
-    transform += `perspective(800px) scale(${latestValue.zoom}) `;
+  const zoom = latestValue.zoom;
+  if (typeof zoom === 'number') {
+    transform += `perspective(800px) scale(${zoom}) `;
   }
   return transform.trim();
+};
+
+const isPositionValue = (value: unknown): value is {x: number; y: number} => {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'x' in value &&
+    'y' in value &&
+    typeof (value as any).x === 'number' &&
+    typeof (value as any).y === 'number'
+  );
 };
 
 export const useAnimations = (tracks: TimelineTrack[]) => {
@@ -42,12 +56,40 @@ export const useAnimations = (tracks: TimelineTrack[]) => {
       const frameStart = segment.t0 * fps;
       const frameEnd = segment.t1 * fps;
       const easingFunction = easingFromSegment(segment.easing);
-      const value = interpolate(frame, [frameStart, frameEnd], [segment.from, segment.to], {
-        extrapolateLeft: 'clamp',
-        extrapolateRight: 'clamp',
-        easing: easingFunction,
-      });
-      latestValue[segment.property] = value;
+      const from = segment.from;
+      const to = segment.to;
+      if (typeof from === 'number' && typeof to === 'number') {
+        const value = interpolate(frame, [frameStart, frameEnd], [from, to], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+          easing: easingFunction,
+        });
+        latestValue[segment.property] = value;
+        continue;
+      }
+
+      if (isPositionValue(from) && isPositionValue(to)) {
+        const x = interpolate(frame, [frameStart, frameEnd], [from.x, to.x], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+          easing: easingFunction,
+        });
+        const y = interpolate(frame, [frameStart, frameEnd], [from.y, to.y], {
+          extrapolateLeft: 'clamp',
+          extrapolateRight: 'clamp',
+          easing: easingFunction,
+        });
+        latestValue[segment.property] = {x, y};
+        continue;
+      }
+
+      if (typeof from === 'string' && typeof to === 'string') {
+        const midpoint = frameStart + (frameEnd - frameStart) / 2;
+        latestValue[segment.property] = frame <= midpoint ? from : to;
+        continue;
+      }
+
+      latestValue[segment.property] = frame <= frameStart ? from : to;
     }
 
     let finalTransform = calculateTransform(latestValue);
@@ -75,11 +117,8 @@ export const useAnimations = (tracks: TimelineTrack[]) => {
     if (track.type === 'camera') {
       const existing = styles[track.targetId] || {};
       const cameraStyle: Record<string, any> = {...existing};
-      if (latestValue.cameraPosition) {
-        const value = latestValue.cameraPosition;
-        if (value && typeof value === 'object' && 'x' in value && 'y' in value) {
-          cameraStyle.center = {x: value.x, y: value.y};
-        }
+      if (isPositionValue(latestValue.cameraPosition)) {
+        cameraStyle.center = latestValue.cameraPosition;
       }
       if (typeof latestValue.zoom === 'number') {
         cameraStyle.zoom = latestValue.zoom;
