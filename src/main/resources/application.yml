@@ -15,3 +15,9 @@ layout:
     layer-spacing: 160.0
     node-spacing: 220.0
     grid-step: 40.0
+timeline:
+  camera:
+    default-duration: 1.5
+    default-scale: 1.5
+    default-zoom: 1.0
+    default-speed: 1.0

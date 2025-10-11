@@ -54,8 +54,8 @@ public record AnimationSegment(
         return new AnimationSegment(startTime, endTime, "zoom", from, to, easing);
     }
 
-    public double duration() {
-        return endTime - startTime;
+    public static AnimationSegment speed(double startTime, double endTime, String easing, double from, double to) {
+        return new AnimationSegment(startTime, endTime, "speed", from, to, easing);
     }
 
     public record PositionValue(double x, double y) {

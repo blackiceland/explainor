@@ -17,11 +17,11 @@ interface AnimatedNodeProps {
       borderRadius: number;
     };
   };
-  opacity: number;
-  scale: number;
+  opacity?: number;
+  transform?: string;
 }
 
-export const AnimatedNode: React.FC<AnimatedNodeProps> = ({ node, opacity, scale }) => {
+export const AnimatedNode: React.FC<AnimatedNodeProps> = ({ node, opacity, transform }) => {
   const style = node.visualStyle;
 
   return (
@@ -36,7 +36,7 @@ export const AnimatedNode: React.FC<AnimatedNodeProps> = ({ node, opacity, scale
         border: `${style.borderWidth}px solid ${style.borderColor}`,
         borderRadius: style.borderRadius,
         opacity,
-        transform: `scale(${scale})`,
+        transform,
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'center',
@@ -45,8 +45,6 @@ export const AnimatedNode: React.FC<AnimatedNodeProps> = ({ node, opacity, scale
         fontSize: 14,
         fontWeight: 500,
         fontFamily: 'Inter, system-ui, sans-serif',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-        transition: 'all 0.3s ease',
       }}
     >
       <div style={{ fontSize: 24, marginBottom: 8 }}>

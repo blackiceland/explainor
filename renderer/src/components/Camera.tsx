@@ -1,75 +1,33 @@
 import React from 'react';
-import { AbsoluteFill, Easing, interpolate, useCurrentFrame, useVideoConfig } from 'remotion';
 
-type CameraEvent = {
-    type: 'pan' | 'zoom';
-    time: number;
-    duration: number;
-    to: {
-        x?: number;
-        y?: number;
-        scale?: number;
-    };
+export type CameraAnimatedStyles = {
+  center?: {x: number; y: number};
+  zoom?: number;
+  speed?: number;
+  opacity?: number;
 };
 
-type CameraProps = {
-    children: React.ReactNode;
-    cameraEvents?: CameraEvent[];
+export type CameraProps = {
+  children: React.ReactNode;
+  animatedStyles?: CameraAnimatedStyles;
+  width: number;
+  height: number;
 };
 
-type CameraState = {
-    x: number;
-    y: number;
-    scale: number;
-};
+export const Camera: React.FC<CameraProps> = ({children, animatedStyles, width, height}) => {
+  const center = animatedStyles?.center;
+  const zoom = typeof animatedStyles?.zoom === 'number' ? animatedStyles.zoom : 1;
+  const translateX = center ? center.x : width / 2;
+  const translateY = center ? center.y : height / 2;
 
-export const Camera: React.FC<CameraProps> = ({ children, cameraEvents = [] }) => {
-    const frame = useCurrentFrame();
-    const { fps } = useVideoConfig();
+  const cameraStyle: React.CSSProperties = {
+    position: 'absolute',
+    width,
+    height,
+    transformOrigin: 'center center',
+    transform: `translate(${width / 2 - translateX}px, ${height / 2 - translateY}px) scale(${zoom})`,
+    opacity: animatedStyles?.opacity,
+  };
 
-    const sortedEvents = [...cameraEvents].sort((a, b) => a.time - b.time);
-    const initialState: CameraState = { x: 0, y: 0, scale: 1 };
-
-    const finalState = sortedEvents.reduce(
-        (prevState, currentEvent) => {
-            const eventStartFrame = currentEvent.time * fps;
-            const eventEndFrame = eventStartFrame + currentEvent.duration * fps;
-
-            if (frame < eventStartFrame) {
-                return prevState;
-            }
-
-            if (frame >= eventEndFrame) {
-                return {
-                    x: currentEvent.to.x ?? prevState.x,
-                    y: currentEvent.to.y ?? prevState.y,
-                    scale: currentEvent.to.scale ?? prevState.scale,
-                };
-            }
-
-            const progress = interpolate(frame, [eventStartFrame, eventEndFrame], [0, 1], {
-                extrapolateLeft: 'clamp',
-                extrapolateRight: 'clamp',
-                easing: Easing.inOut(Easing.cubic),
-            });
-
-            return {
-                x: interpolate(progress, [0, 1], [prevState.x, currentEvent.to.x ?? prevState.x]),
-                y: interpolate(progress, [0, 1], [prevState.y, currentEvent.to.y ?? prevState.y]),
-                scale: interpolate(progress, [0, 1], [prevState.scale, currentEvent.to.scale ?? prevState.scale]),
-            };
-        },
-        initialState
-    );
-
-    const transform = `scale(${finalState.scale}) translateX(${finalState.x}px) translateY(${finalState.y}px)`;
-
-    return (
-        <AbsoluteFill style={{
-            transformOrigin: 'center center',
-            transform,
-        }}>
-            {children}
-        </AbsoluteFill>
-    );
+  return <div style={cameraStyle}>{children}</div>;
 };

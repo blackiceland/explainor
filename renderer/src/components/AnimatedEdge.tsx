@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useMemo} from 'react';
 
 interface Point {
   x: number;
@@ -10,25 +10,28 @@ interface AnimatedEdgeProps {
     id: string;
     from: string;
     to: string;
-    label: string;
+    label: string | null;
     path: Point[];
+    pathLength: number;
     edgeStyle: {
       strokeColor: string;
       strokeWidth: number;
       arrowStyle: string;
+      lineStyle?: string;
     };
   };
-  opacity: number;
+  opacity?: number;
+  strokeDashoffset?: number;
 }
 
-export const AnimatedEdge: React.FC<AnimatedEdgeProps> = ({ edge, opacity }) => {
+export const AnimatedEdge: React.FC<AnimatedEdgeProps> = ({ edge, opacity, strokeDashoffset }) => {
   if (edge.path.length < 2) return null;
 
-  const pathData = edge.path
+  const pathData = useMemo(() => edge.path
     .map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`)
-    .join(' ');
+    .join(' '), [edge.path]);
 
-  const lastPoint = edge.path[edge.path.length - 1];
+  const dashArray = edge.edgeStyle.lineStyle === 'dashed' ? '10, 10' : undefined;
 
   return (
     <svg
@@ -49,11 +52,13 @@ export const AnimatedEdge: React.FC<AnimatedEdgeProps> = ({ edge, opacity }) => 
         fill="none"
         strokeLinecap="round"
         strokeLinejoin="round"
+        strokeDasharray={dashArray || edge.pathLength}
+        strokeDashoffset={strokeDashoffset}
       />
       {edge.label && (
         <text
-          x={(edge.path[0].x + lastPoint.x) / 2}
-          y={(edge.path[0].y + lastPoint.y) / 2 - 10}
+          x={edge.path[Math.floor(edge.path.length/2)].x}
+          y={edge.path[Math.floor(edge.path.length/2)].y - 10}
           fill="#94a3b8"
           fontSize="12"
           fontFamily="Inter, system-ui, sans-serif"

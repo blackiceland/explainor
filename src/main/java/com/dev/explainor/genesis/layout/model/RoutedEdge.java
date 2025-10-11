@@ -1,5 +1,6 @@
 package com.dev.explainor.genesis.layout.model;
 
+import com.dev.explainor.genesis.domain.ConnectEntitiesParams;
 import com.dev.explainor.genesis.domain.Point;
 
 import java.util.List;
@@ -13,7 +14,8 @@ public record RoutedEdge(
     List<Point> path,
     Point startAnchor,
     Point endAnchor,
-    double pathLength
+    double pathLength,
+    ConnectEntitiesParams params
 ) {
 }
 

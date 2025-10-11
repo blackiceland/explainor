@@ -1,5 +1,5 @@
-import { Composition, registerRoot, getInputProps } from 'remotion';
-import { Composition as VideoComposition } from './remotion/Composition';
+import {Composition, registerRoot, getInputProps} from 'remotion';
+import {Main as MainComposition, mainSchema} from './remotion/Main';
 
 const defaultTimeline = {
   version: '1.1.0',
@@ -139,14 +139,12 @@ registerRoot(() => {
     <>
       <Composition
         id="Main"
-        component={VideoComposition}
+        component={MainComposition}
         durationInFrames={durationInFrames}
         fps={30}
         width={stageWidth}
         height={stageHeight}
-        defaultProps={{
-          timeline: timeline,
-        }}
+        defaultProps={mainSchema.parse(timeline)}
       />
     </>
   );

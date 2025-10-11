@@ -27,7 +27,7 @@ public class LayoutModelFactory {
                 }
                 case ConnectEntitiesCommand connectCmd -> {
                     ConnectEntitiesParams params = connectCmd.params();
-                    LayoutEdge edge = new LayoutEdge(connectCmd.id(), params.from(), params.to(), params.label(), params.lineStyle());
+                    LayoutEdge edge = new LayoutEdge(connectCmd.id(), params.from(), params.to(), params.label(), params.lineStyle(), params);
                     edges.add(edge);
                 }
                 case AnimateBehaviorCommand behaviorCmd -> {}
